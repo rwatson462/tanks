@@ -3,6 +3,9 @@
 .idea
 cmake-build-debug
 
+# Visual studio files
+.vs
+
 # OSX thumbnails file
 .DS_Store
 
