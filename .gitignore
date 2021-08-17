@@ -1,0 +1,10 @@
+
+# CLion files
+.idea
+cmake-build-debug
+
+# OSX thumbnails file
+.DS_Store
+
+# Github API token
+.token
