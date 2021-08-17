@@ -8,3 +8,6 @@ cmake-build-debug
 
 # Github API token
 .token
+
+# CMake files shouldn't be committed as they're platform dependent
+CMakeLists.txt
