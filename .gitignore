@@ -5,12 +5,10 @@ cmake-build-debug
 
 # Visual studio files
 .vs
+Debug
 
 # OSX thumbnails file
 .DS_Store
 
 # Github API token
 .token
-
-# CMake files shouldn't be committed as they're platform dependent
-CMakeLists.txt
