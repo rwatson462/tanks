@@ -186,30 +186,27 @@ private:
         float xD = GetMouseX() - float(playerX);
         float yD = -(GetMouseY() - float(playerY));
 
-        float targetAngle;
         // handle possible divide by zero errors
         if (yD == 0)
         {
             if (xD > 0)
             {
-                targetAngle = M_PI * 0.5;
+                playerA = M_PI * 0.5;
             }
             else if (xD < 0)
             {
-                targetAngle = M_PI * 1.5;
+                playerA = M_PI * 1.5;
             }
             else
             {
-                targetAngle = 0;
+                playerA = 0;
             }
         }
         else
         {
-            targetAngle = atan(xD / yD);
-            if (yD < 0) targetAngle += M_PI;
+            playerA = atan(xD / yD);
+            if (yD < 0) playerA += M_PI;
         }
-
-        playerA = targetAngle;
     }
 
     void shoot(float fElapsedTime)
@@ -289,7 +286,7 @@ private:
         }
 
         // loop over projectiles, removing dead ones
-        if (projectiles.size() > 0)
+        if ( !projectiles.empty() )
         {
             // not 100% sure what idx is, possibly an integer index that we can use to break the chain in the list
             // remove_it sorts the projectiles with all that are alive first, followed by all that are not alive
@@ -324,6 +321,7 @@ private:
 
     void renderMap()
     {
+        // The tile map
         for (int y = 0; y < mapHeight; y++)
         {
             for (int x = 0; x < mapWidth; x++)
@@ -340,6 +338,7 @@ private:
             }
         }
 
+        //TODO change this in favour of a list of obstacles
         for (int y = 0; y < mapHeight; y++)
         {
             for (int x = 0; x < mapWidth; x++)
@@ -360,6 +359,7 @@ private:
 
     void renderPlayer()
     {
+        // draw the tank chassis
         DrawRotatedDecal(
             { playerX, playerY },
             tankChassisDecal,
@@ -368,6 +368,8 @@ private:
             {1.0f, 1.0f},
             playerColour
         );
+
+        // draw the turret
         DrawRotatedDecal(
             { playerX, playerY },
             tankTurretDecal,
@@ -396,10 +398,16 @@ private:
 
     void renderUI()
     {
-        // draw player location and angle
+        // draw player location
         // todo
         // for some reason drawstring doesn't work on my windows workstation
         // so we need to create a "proper" ui that uses sprites to draw
+        DrawString(
+                1,
+                1,
+                "{ " + std::to_string(playerX) + " / " + std::to_string(playerY) + " }",
+                olc::WHITE
+                );
     }
 
 
