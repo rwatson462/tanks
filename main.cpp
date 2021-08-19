@@ -1,7 +1,7 @@
 #define _USE_MATH_DEFINES
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine/olcPixelGameEngine.h"
-#include <math.h>
+#include <cmath>
 #include "projectile.cpp"
 
 constexpr int PROJECTILE_BULLET    = 1;
