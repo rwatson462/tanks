@@ -38,6 +38,8 @@ private:
     olc::Sprite *tankTurretSprite;
     olc::Decal *tankChassisDecal;
     olc::Decal *tankTurretDecal;
+    olc::Sprite* tankTrackSprite;
+    olc::Decal* tankTrackDecal;
 
     olc::Sprite *bulletSprite;
     olc::Decal* bulletDecal;
@@ -51,6 +53,8 @@ private:
     olc::Pixel playerColour;
     float tankRotateSpeed = 2.0f, turretRotateSpeed = 1.0f;
     float tankMoveSpeed = 40.0f;
+
+    std::vector<olc::vi2d> tracks;
 
 
     float radToDeg(float rad)
@@ -74,7 +78,9 @@ private:
         tankChassisSprite = new olc::Sprite( "./assets/tank-chassis.png" );
         tankTurretSprite = new olc::Sprite( "./assets/tank-turret.png" );
         tankChassisDecal = new olc::Decal( tankChassisSprite );
-        tankTurretDecal = new olc::Decal( tankTurretSprite );
+        tankTurretDecal = new olc::Decal(tankTurretSprite);
+        tankTrackSprite = new olc::Sprite("./assets/tank-tracks.png");
+        tankTrackDecal = new olc::Decal(tankTrackSprite);
 
         destructableWallSprite = new olc::Sprite("./assets/destructable-wall.png");
         destructableWallDecal = new olc::Decal(destructableWallSprite);
@@ -122,7 +128,7 @@ private:
         obsMap += L"                    ";
         obsMap += L"                    ";
         obsMap += L"                    ";
-        obsMap += L"                    ";
+        obsMap += L"  oooooooooooooooo  ";
         obsMap += L"                    ";
         obsMap += L"                    ";
 
@@ -402,12 +408,12 @@ private:
         // todo
         // for some reason drawstring doesn't work on my windows workstation
         // so we need to create a "proper" ui that uses sprites to draw
-        DrawString(
-                1,
-                1,
-                "{ " + std::to_string(playerX) + " / " + std::to_string(playerY) + " }",
-                olc::WHITE
-                );
+        float offset = halfTileSize / 2;
+        DrawStringDecal(
+            { offset, offset },
+            "{ " + std::to_string((int)playerX/tileSize) + " / " + std::to_string((int)playerY/tileSize) + " }",
+            olc::WHITE
+        );
     }
 
 
