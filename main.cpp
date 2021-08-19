@@ -20,10 +20,11 @@ public:
 private:
 
     bool isRunning = true;
+    bool isPaused = false;
 
     std::wstring map, obsMap;
     int mapWidth, mapHeight;
-    int tileSize, halfTileSize;
+    int tileSize = 16, halfTileSize = 8;
     olc::Sprite *grassSprite;
     olc::Sprite *dirtSprite;
     olc::Decal *grassDecal;
@@ -45,28 +46,22 @@ private:
     olc::Decal* bulletDecal;
     int bulletDrawOffset;
     std::vector<Projectile*> projectiles;
-    int activePlayerBullets = 0;
-    float bulletSpeed = 100.0f;
 
-    float playerX, playerY, playerD, playerA = 0.0f;
-    float playerDSin, playerDCos = 0.0f;
+    float playerX = 0.0f, playerY = 0.0f, playerD = 0.0f, playerA = 0.0f;
+    float playerDSin = 0.0f, playerDCos = 0.0f;
     olc::Pixel playerColour;
     float tankRotateSpeed = 2.0f, turretRotateSpeed = 1.0f;
     float tankMoveSpeed = 40.0f;
 
     std::vector<olc::vi2d> tracks;
 
-
     float radToDeg(float rad)
     {
         return double(rad) * 180 / M_PI;
     }
 
-
     bool OnUserCreate() override
     {
-        tileSize = 16;
-        halfTileSize = tileSize / 2;
         mapWidth = ScreenWidth() / tileSize;
         mapHeight = ScreenHeight() / tileSize;
 
@@ -135,7 +130,6 @@ private:
         return true;
     }
 
-
     bool OnUserUpdate(float fElapsedTime) override
     {
         Update( fElapsedTime );
@@ -145,6 +139,16 @@ private:
 
     void Update( float fElapsedTime )
     {
+        if( GetKey(olc::P ).bPressed )
+        {
+            isPaused = !isPaused;
+        }
+
+        if( isPaused )
+        {
+            return;
+        }
+
         handlePlayerMovement(fElapsedTime);
     }
 
@@ -265,6 +269,7 @@ private:
             if (projectile->x < 0 || projectile->x >= ScreenWidth() || projectile->y < 0 || projectile->y > ScreenHeight())
             {
                 projectile->isAlive = false;
+                continue;
             }
 
             // check collisions with obstacles and other tanks
@@ -273,21 +278,17 @@ private:
             int projX = floor(projectile->x / tileSize);
             int projY = floor(projectile->y / tileSize);
 
-            if (projX >= 0 && projX < mapWidth && projY >= 0 && projY < mapHeight)
+            wchar_t obs = obsMap[projY * mapWidth + projX];
+            if (obs == L'o')
             {
-
-                wchar_t obs = obsMap[projY * mapWidth + projX];
-                if (obs == L'o')
-                {
-                    // we're colliding with a solid wall, just delete ourselves
-                    projectile->isAlive = false;
-                }
-                else if (obs == L'x')
-                {
-                    // we're colliding with a destructable wall, destruct it
-                    projectile->isAlive = false;
-                    obsMap[projY * mapWidth + projX] = L' ';
-                }
+                // we're colliding with a solid wall, just delete ourselves
+                projectile->isAlive = false;
+            }
+            else if (obs == L'x')
+            {
+                // we're colliding with a destructable wall, destruct it
+                projectile->isAlive = false;
+                obsMap[projY * mapWidth + projX] = L' ';
             }
         }
 
@@ -335,11 +336,17 @@ private:
                 wchar_t tileId = map[y * mapWidth + x];
                 if (tileId == L'.')
                 {
-                    DrawDecal({ float(x * tileSize), float(y * tileSize) }, grassDecal);
+                    DrawDecal(
+                        { (float)(x * tileSize), float(y * tileSize) },
+                        grassDecal
+                    );
                 }
                 else if (tileId == L'#')
                 {
-                    DrawDecal({ float(x * tileSize), float(y * tileSize) }, dirtDecal);
+                    DrawDecal(
+                        { float(x * tileSize), float(y * tileSize) },
+                        dirtDecal
+                    );
                 }
             }
         }
@@ -401,19 +408,27 @@ private:
         }
     }
 
-
     void renderUI()
     {
         // draw player location
-        // todo
-        // for some reason drawstring doesn't work on my windows workstation
-        // so we need to create a "proper" ui that uses sprites to draw
-        float offset = halfTileSize / 2;
         DrawStringDecal(
-            { offset, offset },
+            { (float)halfTileSize, (float)halfTileSize },
             "{ " + std::to_string((int)playerX/tileSize) + " / " + std::to_string((int)playerY/tileSize) + " }",
             olc::WHITE
         );
+
+        DrawStringDecal(
+            { (float)halfTileSize, (float)tileSize+halfTileSize},
+            std::to_string(GetMouseX()) + ":" + std::to_string(GetMouseY())
+        );
+
+        if( isPaused )
+        {
+            DrawStringDecal(
+                { (float)ScreenWidth()/4, (float)ScreenHeight()/2 },
+                "Paused. Press (P)"
+            );
+        }
     }
 
 
@@ -431,7 +446,7 @@ private:
 int main()
 {
     TanksGame game;
-    if( game.Construct(320, 240, 4, 4 ) )
+    if( game.Construct(320, 240, 2, 2, true ) )
     {
         game.Start();
     }

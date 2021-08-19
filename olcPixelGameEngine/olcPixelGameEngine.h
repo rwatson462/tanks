@@ -194,7 +194,7 @@
 
 	Author
 	~~~~~~
-	David Barr, aka javidx9, ©OneLoneCoder 2018, 2019, 2020, 2021
+	David Barr, aka javidx9, ï¿½OneLoneCoder 2018, 2019, 2020, 2021
 */
 #pragma endregion
 
@@ -4108,7 +4108,7 @@ namespace olc
 // | START IMAGE LOADER: libpng, default on linux, requires -lpng  (libpng-dev)   |
 // O------------------------------------------------------------------------------O
 #if defined(OLC_IMAGE_LIBPNG)
-#include <png.h>
+#include </usr/local/Cellar/libpng/1.6.37/include/png.h>
 namespace olc
 {
 	void pngReadStream(png_structp pngPtr, png_bytep data, png_size_t length)
