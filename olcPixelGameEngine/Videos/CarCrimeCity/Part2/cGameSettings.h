@@ -6,9 +6,9 @@
 
 extern "C"
 {
-#include "Lua533/include/lua.h"
-#include "Lua533/include/lauxlib.h"
-#include "Lua533/include/lualib.h"
+#include "lua533/include/lua.h"
+#include "lua533/include/lauxlib.h"
+#include "lua533/include/lualib.h"
 }
 
 #ifdef _WIN32

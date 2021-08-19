@@ -50,12 +50,12 @@
 
 	Author
 	~~~~~~
-	David Barr, aka javidx9, ï¿½OneLoneCoder 2019, 2020
+	David Barr, aka javidx9, ©OneLoneCoder 2019, 2020
 
 */
 
 #include <iostream>
-#include "olc_net.h"
+#include <olc_net.h>
 
 enum class CustomMsgTypes : uint32_t
 {
