@@ -1,12 +1,6 @@
 #include <iostream>
 #include <math.h>
 
-/**
-	Yes, yes, having multiple classes in the same .cpp file is probably
-	an anti-pattern but I don't care.  Maybe one day I'll learn how to
-	write proper c++ and come back and fix this.  Or maybe I won't.
-*/
-
 class Projectile
 {
 public:
