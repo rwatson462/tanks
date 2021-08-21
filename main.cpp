@@ -26,6 +26,7 @@ private:
     int mapWidth, mapHeight;
     int tileSize = 16, halfTileSize = 8;
     float f_tileSize = (float)tileSize;
+    float f_tankBoundingSize = f_tileSize * 0.4f; // distance from centre of tank to edge of hit box
     olc::Sprite *grassSprite;
     olc::Sprite *dirtSprite;
     olc::Decal *grassDecal;
@@ -196,13 +197,13 @@ private:
         int plrX_tile, plrY_tile, newX_tile, newY_tile, newTile;
 
         // top left corner
-        plrX_tile = (int)((playerX - halfTileSize) / tileSize);
-        plrY_tile = (int)((playerY - halfTileSize) / tileSize);
+        plrX_tile = (int)((playerX - f_tankBoundingSize) / tileSize);
+        plrY_tile = (int)((playerY - f_tankBoundingSize) / tileSize);
 
-        newX_tile = (int)((newX - halfTileSize + 1) / tileSize);
-        newY_tile = (int)((newY - halfTileSize + 1) / tileSize);
+        newX_tile = (int)((newX -f_tankBoundingSize) / tileSize);
+        newY_tile = (int)((newY -f_tankBoundingSize)/ tileSize );
 
-        pointsOfInterest.push_back({ (newX - halfTileSize + 1) / tileSize , (newY - halfTileSize + 1) / tileSize });
+        pointsOfInterest.push_back({ (float)newX_tile , (float)newY_tile });
         tilesOfInterest.push_back({ newX_tile, newY_tile });
 
         newTile = obsMap[newY_tile * mapWidth + newX_tile];
@@ -213,30 +214,30 @@ private:
         }
 
         // top right corner
-        plrX_tile = (int)((playerX + halfTileSize) / tileSize);
-        plrY_tile = (int)((playerY - halfTileSize) / tileSize);
+        plrX_tile = (int)((playerX + f_tankBoundingSize) / tileSize);
+        plrY_tile = (int)((playerY - f_tankBoundingSize) / tileSize);
 
-        newX_tile = (int)((newX + halfTileSize) / tileSize);
-        newY_tile = (int)((newY - halfTileSize) / tileSize);
+        newX_tile = (int)((newX + f_tankBoundingSize) / tileSize);
+        newY_tile = (int)((newY - f_tankBoundingSize) / tileSize);
 
-        pointsOfInterest.push_back({ (newX + halfTileSize) / tileSize , (newY - halfTileSize) / tileSize });
+        pointsOfInterest.push_back({ (float)newX_tile, (float)newY_tile });
         tilesOfInterest.push_back({ newX_tile, newY_tile });
 
         newTile = obsMap[newY_tile * mapWidth + newX_tile];
         if (newTile != L' ')
         {
-            if (newX_tile > plrX_tile) diffX = 0;
-            if (newY_tile < plrY_tile) diffY = 0;
+            if (newX > playerX) diffX = 0;
+            if (newY < playerY) diffY = 0;
         }
 
         // bottom left corner
-        plrX_tile = (int)((playerX - halfTileSize) / tileSize);
-        plrY_tile = (int)((playerY - halfTileSize) / tileSize);
+        plrX_tile = (int)((playerX - f_tankBoundingSize) / tileSize);
+        plrY_tile = (int)((playerY - f_tankBoundingSize) / tileSize);
 
-        newX_tile = (int)((newX - halfTileSize) / tileSize);
-        newY_tile = (int)((newY + halfTileSize) / tileSize);
+        newX_tile = (int)((newX - f_tankBoundingSize) / tileSize);
+        newY_tile = (int)((newY + f_tankBoundingSize) / tileSize);
 
-        pointsOfInterest.push_back({ (newX - halfTileSize) / tileSize , (newY + halfTileSize) / tileSize });
+        pointsOfInterest.push_back({ (float)newX_tile, (float)newY_tile });
         tilesOfInterest.push_back({ newX_tile, newY_tile });
 
         newTile = obsMap[newY_tile * mapWidth + newX_tile];
@@ -247,13 +248,13 @@ private:
         }
 
         // bottom right corner
-        plrX_tile = (int)((playerX + halfTileSize) / tileSize);
-        plrY_tile = (int)((playerY + halfTileSize) / tileSize);
+        plrX_tile = (int)((playerX + f_tankBoundingSize) / tileSize);
+        plrY_tile = (int)((playerY + f_tankBoundingSize) / tileSize);
 
-        newX_tile = (int)((newX - halfTileSize) / tileSize);
-        newY_tile = (int)((newY + halfTileSize) / tileSize);
+        newX_tile = (int)((newX + f_tankBoundingSize) / tileSize);
+        newY_tile = (int)((newY + f_tankBoundingSize) / tileSize);
 
-        pointsOfInterest.push_back({ (newX + halfTileSize) / tileSize , (newY + halfTileSize) / tileSize });
+        pointsOfInterest.push_back({ (float)newX_tile, (float)newY_tile });
         tilesOfInterest.push_back({ newX_tile, newY_tile });
 
         newTile = obsMap[newY_tile * mapWidth + newX_tile];
@@ -602,7 +603,7 @@ private:
 int main()
 {
     TanksGame game;
-    if( game.Construct(320, 240, 4, 4, false ) )
+    if( game.Construct(320, 240, 2, 2, false ) )
     {
         game.Start();
     }
