@@ -7,6 +7,7 @@
 constexpr int PROJECTILE_BULLET    = 1;
 constexpr int PROJECTILE_BULLET_AP = 2;
 constexpr int PROJECTILE_MISSILE   = 3;
+constexpr int PROJECTILE_LANDMINE  = 4;
 
 
 class TanksGame : public olc::PixelGameEngine
@@ -52,18 +53,14 @@ private:
     float playerX = 0.0f, playerY = 0.0f, playerD = 0.0f, playerA = 0.0f;
     float playerDSin = 0.0f, playerDCos = 0.0f;
     olc::Pixel playerColour;
-    float tankRotateSpeed = 2.0f, turretRotateSpeed = 1.0f;
+    float tankRotateSpeed = 2.0f;
     float tankMoveSpeed = 40.0f;
+    int currentProjectile = PROJECTILE_BULLET;
 
     std::vector<olc::vi2d> tilesOfInterest;
     std::vector<olc::vf2d> pointsOfInterest;
 
     std::vector<olc::vi2d> tracks;
-
-    float radToDeg(float rad)
-    {
-        return double(rad) * 180 / M_PI;
-    }
 
     bool OnUserCreate() override
     {
@@ -91,12 +88,12 @@ private:
         bulletDecal = new olc::Decal(bulletSprite);
         bulletDrawOffset = bulletSprite->width / 2;
 
-        playerX = ScreenWidth() / 2;
-        playerY = ScreenHeight() - tileSize*2;
+        playerX = ScreenWidth() / 2.0f;
+        playerY = ScreenHeight() - f_tileSize * 2.0f;
         playerDSin = sin(playerD);
         playerDCos = cos(playerD);
 
-        playerColour = olc::Pixel(0, 255, 255, 255);
+        playerColour = olc::Pixel(255, 128, 255, 255);
 
         // small map
         map =  L"####################";
@@ -120,9 +117,9 @@ private:
         obsMap += L"                    ";
         obsMap += L"   oo xx oo xx oo   ";
         obsMap += L"   o            o   ";
+        obsMap += L"   o   xxxxxx   o   ";
         obsMap += L"   o            o   ";
-        obsMap += L"   o            o   ";
-        obsMap += L"   o            o   ";
+        obsMap += L"   o   xxxxxx   o   ";
         obsMap += L"   o            o   ";
         obsMap += L"   oo xx oo xx oo   ";
         obsMap += L"                    ";
@@ -144,17 +141,50 @@ private:
 
     void Update( float fElapsedTime )
     {
+        // quit with escape
+        if (GetKey(olc::ESCAPE).bPressed)
+        {
+            isRunning = false;
+            return;
+        }
+
+        // pause with 'p'
         if( GetKey(olc::P ).bPressed )
         {
             isPaused = !isPaused;
         }
 
+        // take no further action if the game is paused
         if( isPaused )
         {
             return;
         }
 
         handlePlayerMovement(fElapsedTime);
+        changeWeapon();
+        shoot();
+        updateProjectiles(fElapsedTime);
+    }
+
+    void changeWeapon()
+    {
+        if( !GetKey(olc::TAB).bPressed) return;
+
+        switch(currentProjectile)
+        {
+            case PROJECTILE_BULLET:
+                currentProjectile = PROJECTILE_BULLET_AP;
+                break;
+            case PROJECTILE_BULLET_AP:
+                currentProjectile = PROJECTILE_MISSILE;
+                break;
+            case PROJECTILE_MISSILE:
+                currentProjectile = PROJECTILE_LANDMINE;
+                break;
+            case PROJECTILE_LANDMINE:
+                currentProjectile = PROJECTILE_BULLET;
+                break;
+        }
     }
 
     void rotateChassis(float fElapsedTime)
@@ -355,42 +385,37 @@ private:
         }
     }
 
-    void shoot(float fElapsedTime)
+    void shoot()
     {
         // left mouse = bullet
-        if (GetMouse( 0 ).bPressed )
+        if (GetMouse( 0 ).bPressed || GetKey(olc::SPACE).bPressed)
         {
-            // attempt to fire a bullet
+            // attempt to fire whatever the current projectile is
 
             // adjust start position of bullet so it appears to come from the end of the turret
             float startX = playerX + 8.0f * sin(playerA);
             float startY = playerY - 8.0f * cos(playerA);
 
-            Projectile* b = new Projectile(PROJECTILE_BULLET, startX, startY, playerA, 200.0f, 0.2f);
+            // TODO create struct of all projectiles with their stats so we don't need to refer to all of them in here
+            Projectile* b;
+
+            switch( currentProjectile )
+            {
+                case PROJECTILE_BULLET:
+                    b = new Projectile(PROJECTILE_BULLET, startX, startY, playerA, 200.0f, 0.2f);
+                    break;
+                case PROJECTILE_BULLET_AP:
+                    b = new Projectile(PROJECTILE_BULLET_AP, startX, startY, playerA, 150.0f, 2.0f);
+                    break;
+                case PROJECTILE_MISSILE:
+                    b = new Projectile(PROJECTILE_MISSILE, startX, startY, playerA, 50.0f, 10.0f);
+                    break;
+                case PROJECTILE_LANDMINE:
+                    b = new Projectile(PROJECTILE_LANDMINE, playerX, playerY, playerA, 0.0f, 10.0f);
+                    break;
+            }
+
             projectiles.push_back( b );
-        }
-
-        // right mouse = special bullet
-        if (GetMouse(1).bPressed)
-        {
-            // fire something else
-
-            // adjust start position of bullet so it appears to come from the end of the turret
-            float startX = playerX + 8.0f * sin(playerA);
-            float startY = playerY - 8.0f * cos(playerA);
-
-            Projectile* b = new Projectile(PROJECTILE_BULLET_AP, startX, startY, playerA, 150.0f, 2.0f);
-            projectiles.push_back(b);
-        }
-
-        // space bar = missile
-        if (GetKey(olc::SPACE).bPressed)
-        {
-            float startX = playerX + 8.0f * sin(playerA);
-            float startY = playerY - 8.0f * cos(playerA);
-
-            Projectile* b = new Projectile(PROJECTILE_MISSILE, startX, startY, playerA, 50.0f, 10.0f);
-            projectiles.push_back(b);
         }
     }
 
@@ -448,18 +473,13 @@ private:
 
     void handlePlayerMovement(float fElapsedTime)
     {
-        if (GetKey(olc::ESCAPE).bPressed)
-        {
-            isRunning = false;
-            return;
-        }
-
+        // handle A/D
         rotateChassis(fElapsedTime);
-        moveTank(fElapsedTime);
-        rotateTurret(fElapsedTime);
-        shoot(fElapsedTime);
 
-        updateProjectiles( fElapsedTime);
+        // handle W/S
+        moveTank(fElapsedTime);
+
+        rotateTurret(fElapsedTime);
     }
 
     void renderMap()
@@ -518,7 +538,6 @@ private:
             );
         }
 
-
         // draw the tank chassis
         DrawRotatedDecal(
             { playerX, playerY },
@@ -552,13 +571,15 @@ private:
     {
         for (auto& p : projectiles)
         {
-            if (p->type == PROJECTILE_BULLET)
+            switch( p->type)
             {
-                DrawDecal({ p->x - bulletDrawOffset, p->y - bulletDrawOffset }, bulletDecal);
-            }
-            else if (p->type == PROJECTILE_BULLET_AP)
-            {
-                DrawDecal({ p->x - bulletDrawOffset, p->y - bulletDrawOffset }, bulletDecal, { 1.0f, 1.0f }, olc::RED);
+                case PROJECTILE_BULLET:
+                    DrawDecal({ p->x - bulletDrawOffset, p->y - bulletDrawOffset }, bulletDecal);
+                    break;
+                case PROJECTILE_BULLET_AP:
+                    DrawDecal({ p->x - bulletDrawOffset, p->y - bulletDrawOffset }, bulletDecal, { 1.0f, 1.0f }, olc::RED);
+                    break;
+                //TODO add missile and landmine
             }
         }
     }
@@ -572,12 +593,33 @@ private:
             olc::WHITE
         );
 
-        /*
-        DrawStringDecal(
-            { (float)halfTileSize, (float)tileSize+halfTileSize},
-            std::to_string(GetMouseX()) + ":" + std::to_string(GetMouseY())
-        );
-        */
+        switch(currentProjectile)
+        {
+            case PROJECTILE_BULLET:
+                DrawStringDecal(
+                        {(float)halfTileSize, ScreenHeight() - 12.0f},
+                        "Bullet"
+                        );
+                break;
+            case PROJECTILE_BULLET_AP:
+                DrawStringDecal(
+                        {(float)halfTileSize, ScreenHeight() - 12.0f},
+                        "Armour-piercing Bullet"
+                );
+                break;
+            case PROJECTILE_MISSILE:
+                DrawStringDecal(
+                        {(float)halfTileSize, ScreenHeight() - 12.0f},
+                        "Missile"
+                );
+                break;
+            case PROJECTILE_LANDMINE:
+                DrawStringDecal(
+                        {(float)halfTileSize, ScreenHeight() - 12.0f},
+                        "Landmine"
+                );
+                break;
+        }
 
         if( isPaused )
         {
@@ -587,7 +629,6 @@ private:
             );
         }
     }
-
 
     void Render( float fElapsedTime )
     {
