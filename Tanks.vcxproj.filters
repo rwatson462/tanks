@@ -18,7 +18,7 @@
     <ClInclude Include="olcPixelGameEngine\olcPixelGameEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tank_game_map.h">
+    <ClInclude Include="map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClCompile Include="projectile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tank_game_map.cpp">
+    <ClCompile Include="map.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -142,12 +142,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="olcPixelGameEngine\olcPixelGameEngine.h" />
-    <ClInclude Include="tank_game_map.h" />
+    <ClInclude Include="map.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="projectile.cpp" />
-    <ClCompile Include="tank_game_map.cpp" />
+    <ClCompile Include="map.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\bullet.png" />
