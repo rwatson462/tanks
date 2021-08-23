@@ -6,7 +6,6 @@
 #include <cmath>
 
 
-
 class TanksGame : public olc::PixelGameEngine
 {
 public:
@@ -20,11 +19,7 @@ private:
     bool isRunning = true;
     bool isPaused = false;
 
-    std::wstring map, obsMap;
-    int mapWidth, mapHeight;
-    int tileSize = 16, halfTileSize = 8;
-    float f_tileSize = (float)tileSize;
-    float f_tankBoundingSize = f_tileSize * 0.4f; // distance from centre of tank to edge of hit box
+    float f_tileSize, f_halfTileSize, f_tankBoundingSize;
     olc::Sprite *grassSprite;
     olc::Sprite *dirtSprite;
     olc::Decal *grassDecal;
@@ -44,7 +39,7 @@ private:
 
     olc::Sprite *bulletSprite;
     olc::Decal* bulletDecal;
-    int bulletDrawOffset;
+    float bulletDrawOffset;
     std::vector<Projectile*> projectiles;
 
     float playerX = 0.0f, playerY = 0.0f, playerD = 0.0f, playerA = 0.0f;
@@ -58,13 +53,15 @@ private:
 
     std::vector<olc::vi2d> tracks;
 
+    TileMap* map;
+
     bool OnUserCreate() override
     {
-        mapWidth = 20;
-        mapHeight = 15;
-        tileSize = ScreenHeight() / mapHeight;
-        f_tileSize = (float)tileSize;
-        halfTileSize = tileSize / 2;
+        map = new TileMap();
+        map->load("start");
+        f_tileSize = (float)ScreenHeight() / (float)map->mapHeight;
+        f_halfTileSize = f_tileSize / 2.0f;
+        f_tankBoundingSize = f_tileSize * 0.4f; // distance from centre of tank to edge of hit box
 
         grassSprite = new olc::Sprite("./assets/grasstop.png");
         dirtSprite = new olc::Sprite("./assets/dirt.png");
@@ -85,20 +82,14 @@ private:
 
         bulletSprite = new olc::Sprite("./assets/bullet.png");
         bulletDecal = new olc::Decal(bulletSprite);
-        bulletDrawOffset = bulletSprite->width / 2;
+        bulletDrawOffset = bulletSprite->width / 2.0f;
 
-        playerX = mapWidth * f_tileSize / 2.0f;
-        playerY = mapHeight * f_tileSize - f_tileSize * 2.0f + halfTileSize;
+        playerX = map->mapWidth * f_tileSize / 2.0f;
+        playerY = map->mapHeight * f_tileSize - f_tileSize * 2.0f + f_halfTileSize;
         playerDSin = sin(playerD);
         playerDCos = cos(playerD);
 
         playerColour = olc::Pixel(255, 128, 255, 255);
-
-        // small map
-        loadMap(map, "starting map");
-
-        // obstacle map
-        loadMapObstacles(obsMap, "starting map");
 
         return true;
     }
@@ -185,8 +176,6 @@ private:
         // check for see if an obstacle exists in the tile we'd be in if we applied the x/yDiff
 
         int newX_tile, newY_tile;
-        int plrX_tile = (int)playerX / f_tileSize;
-        int plrY_tile = (int)playerY / f_tileSize;
 
         // check edges, not corners
 
@@ -195,7 +184,7 @@ private:
             // we're moving west
             newX_tile = (int)((newX - f_tankBoundingSize) / f_tileSize);
             newY_tile = (int)(newY / f_tileSize);
-            if (obsMap[newY_tile * mapWidth + newX_tile] != L' ')
+            if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
             {
                 diffX = 0;
             }
@@ -206,7 +195,7 @@ private:
             // we're moving east
             newX_tile = (int)((newX + f_tankBoundingSize) / f_tileSize);
             newY_tile = (int)(newY / f_tileSize);
-            if (obsMap[newY_tile * mapWidth + newX_tile] != L' ')
+            if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
             {
                 diffX = 0;
             }
@@ -217,8 +206,7 @@ private:
             // we're moving north
             newX_tile = (int)(newX / f_tileSize);
             newY_tile = (int)((newY + f_tankBoundingSize) / f_tileSize);
-            printf("%i %i\n", newX_tile, newY_tile);
-            if (obsMap[newY_tile * mapWidth + newX_tile] != L' ')
+            if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
             {
                 diffY = 0;
             }
@@ -229,7 +217,7 @@ private:
             // we're moving east
             newX_tile = (int)(newX / f_tileSize);
             newY_tile = (int)((newY - f_tankBoundingSize) / f_tileSize);
-            if (obsMap[newY_tile * mapWidth + newX_tile] != L' ')
+            if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
             {
                 diffY = 0;
             }
@@ -249,12 +237,12 @@ private:
             float newY = playerY - diffY;
 
             // check if the tank is leaving the world
-            if (newX < halfTileSize || newX + halfTileSize > mapWidth * f_tileSize)
+            if (newX < f_halfTileSize || newX + f_halfTileSize > map->mapWidth * f_tileSize)
             {
                 diffX = 0;
             }
 
-            if (newY < halfTileSize || newY + halfTileSize > mapHeight * f_tileSize)
+            if (newY < f_halfTileSize || newY + f_halfTileSize > map->mapHeight * f_tileSize)
             {
                 diffY = 0;
             }
@@ -276,12 +264,12 @@ private:
             float newY = playerY + diffY;
 
             // check if the tank is leaving the world
-            if (newX < halfTileSize || newX + halfTileSize > mapWidth * f_tileSize)
+            if (newX < f_halfTileSize || newX + f_halfTileSize > map->mapWidth * f_tileSize)
             {
                 diffX = 0;
             }
 
-            if (newY < halfTileSize || newY + halfTileSize > mapHeight * f_tileSize)
+            if (newY < f_halfTileSize || newY + f_halfTileSize > map->mapHeight * f_tileSize)
             {
                 diffY = 0;
             }
@@ -367,7 +355,11 @@ private:
             projectile->update(fElapsedTime);
 
             // check if projectile is off screen
-            if (projectile->x < 0 || projectile->x >= mapWidth * f_tileSize || projectile->y < 0 || projectile->y > mapHeight * f_tileSize)
+            if (
+                    projectile->x < 0 || projectile->x >= map->mapWidth * f_tileSize
+                    ||
+                    projectile->y < 0 || projectile->y > map->mapHeight * f_tileSize
+                )
             {
                 projectile->isAlive = false;
                 continue;
@@ -376,10 +368,10 @@ private:
             // check collisions with obstacles and other tanks
 
             // convert projectile's x/y to map coords
-            int projX = floor(projectile->x / tileSize);
-            int projY = floor(projectile->y / tileSize);
+            int projX = floor(projectile->x / f_tileSize);
+            int projY = floor(projectile->y / f_tileSize);
 
-            wchar_t obs = obsMap[projY * mapWidth + projX];
+            wchar_t obs = map->getObstacleTile(projX, projY);
             if (obs == L'o')
             {
                 // we're colliding with a solid wall, just delete ourselves
@@ -389,7 +381,7 @@ private:
             {
                 // we're colliding with a destructable wall, destruct it
                 projectile->isAlive = false;
-                obsMap[projY * mapWidth + projX] = L' ';
+                map->alterObstacleTile(projX,projY,L' ');
             }
         }
 
@@ -419,28 +411,29 @@ private:
         // handle W/S
         moveTank(fElapsedTime);
 
+        // point turret at mouse
         rotateTurret(fElapsedTime);
     }
 
     void renderMap()
     {
         // The tile map
-        for (int y = 0; y < mapHeight; y++)
+        for (int y = 0; y < map->mapHeight; y++)
         {
-            for (int x = 0; x < mapWidth; x++)
+            for (int x = 0; x < map->mapWidth; x++)
             {
-                wchar_t tileId = map[y * mapWidth + x];
+                wchar_t tileId = map->getMapTile(x,y);
                 if (tileId == L'.')
                 {
                     DrawDecal(
-                        { (float)(x * tileSize), float(y * tileSize) },
+                        { x * f_tileSize, y * f_tileSize },
                         grassDecal
                     );
                 }
                 else if (tileId == L'#')
                 {
                     DrawDecal(
-                        { float(x * tileSize), float(y * tileSize) },
+                        { x * f_tileSize, y * f_tileSize },
                         dirtDecal
                     );
                 }
@@ -448,22 +441,21 @@ private:
         }
 
         //TODO change this in favour of a list of obstacles
-        for (int y = 0; y < mapHeight; y++)
+        for (int y = 0; y < map->mapHeight; y++)
         {
-            for (int x = 0; x < mapWidth; x++)
+            for (int x = 0; x < map->mapWidth; x++)
             {
-                wchar_t obsId = obsMap[y * mapWidth + x];
+                wchar_t obsId = map->getObstacleTile(x,y);
                 if (obsId == L'x')
                 {
-                    DrawDecal({ float(x * tileSize), float(y * tileSize) }, destructableWallDecal);
+                    DrawDecal({ x * f_tileSize, y * f_tileSize }, destructableWallDecal);
                 }
                 else if (obsId == L'o')
                 {
-                    DrawDecal({ float(x * tileSize), float(y * tileSize) }, solidWallDecal);
+                    DrawDecal({ x * f_tileSize, y * f_tileSize }, solidWallDecal);
                 }
             }
         }
-
     }
 
     void renderPlayer()
@@ -483,7 +475,7 @@ private:
             { playerX, playerY },
             tankChassisDecal,
             playerD,
-            { float(halfTileSize), float(halfTileSize) },
+            {float(f_halfTileSize), float(f_halfTileSize) },
             {1.0f, 1.0f},
             playerColour
         );
@@ -493,7 +485,7 @@ private:
             { playerX, playerY },
             tankTurretDecal,
             playerA,
-            { float(halfTileSize), float(halfTileSize) },
+            {float(f_halfTileSize), float(f_halfTileSize) },
             { 1.0f, 1.0f },
             playerColour
         );
@@ -521,8 +513,8 @@ private:
     {
         // draw player location
         DrawStringDecal(
-            { (float)halfTileSize, (float)halfTileSize },
-            "{ " + std::to_string((int)playerX/tileSize) + " / " + std::to_string((int)playerY/tileSize) + " }",
+            {(float)f_halfTileSize, (float)f_halfTileSize/2.0f },
+            "{ " + std::to_string((int)(playerX/f_tileSize)) + " / " + std::to_string((int)(playerY/f_tileSize)) + " }",
             olc::WHITE
         );
 
@@ -530,25 +522,25 @@ private:
         {
             case PROJECTILE_BULLET:
                 DrawStringDecal(
-                        {(float)halfTileSize, ScreenHeight() - 12.0f},
+                        {(float)f_halfTileSize, ScreenHeight() - 12.0f},
                         "Bullet"
                         );
                 break;
             case PROJECTILE_BULLET_AP:
                 DrawStringDecal(
-                        {(float)halfTileSize, ScreenHeight() - 12.0f},
+                        {(float)f_halfTileSize, ScreenHeight() - 12.0f},
                         "Armour-piercing Bullet"
                 );
                 break;
             case PROJECTILE_MISSILE:
                 DrawStringDecal(
-                        {(float)halfTileSize, ScreenHeight() - 12.0f},
+                        {(float)f_halfTileSize, ScreenHeight() - 12.0f},
                         "Missile"
                 );
                 break;
             case PROJECTILE_LANDMINE:
                 DrawStringDecal(
-                        {(float)halfTileSize, ScreenHeight() - 12.0f},
+                        {(float)f_halfTileSize, ScreenHeight() - 12.0f},
                         "Landmine"
                 );
                 break;
@@ -577,7 +569,7 @@ private:
 int main()
 {
     TanksGame game;
-    if( game.Construct(320, 240, 2, 2, true ) )
+    if( game.Construct(320, 240, 2, 2, false ) )
     {
         game.Start();
     }
