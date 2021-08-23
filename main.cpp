@@ -1,8 +1,9 @@
 #define _USE_MATH_DEFINES
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine/olcPixelGameEngine.h"
-#include <cmath>
+#include "map.h"
 #include "projectile.cpp"
+#include <cmath>
 
 constexpr int PROJECTILE_BULLET    = 1;
 constexpr int PROJECTILE_BULLET_AP = 2;
@@ -96,38 +97,10 @@ private:
         playerColour = olc::Pixel(255, 128, 255, 255);
 
         // small map
-        map =  L"####################";
-        map += L"#..................#";
-        map += L"#..................#";
-        map += L"#..................#";
-        map += L"#..................#";
-        map += L"#..................#";
-        map += L"#..................#";
-        map += L"#..................#";
-        map += L"#..................#";
-        map += L"#..................#";
-        map += L"#..................#";
-        map += L"#..................#";
-        map += L"#..................#";
-        map += L"#..................#";
-        map += L"####################";
+        loadMap(map, "starting map");
 
         // obstacle map
-        obsMap =  L"                    ";
-        obsMap += L"                    ";
-        obsMap += L"   oo xx oo xx oo   ";
-        obsMap += L"   o            o   ";
-        obsMap += L"   o   xxxxxx   o   ";
-        obsMap += L"   o            o   ";
-        obsMap += L"   o   xxxxxx   o   ";
-        obsMap += L"   o            o   ";
-        obsMap += L"   oo xx oo xx oo   ";
-        obsMap += L"                    ";
-        obsMap += L"                    ";
-        obsMap += L"                    ";
-        obsMap += L"  oooooooooooooooo  ";
-        obsMap += L"                    ";
-        obsMap += L"                    ";
+        loadMapObstacles(obsMap, "starting map");
 
         return true;
     }
