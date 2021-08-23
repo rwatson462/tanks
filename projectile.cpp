@@ -1,5 +1,9 @@
-#include <iostream>
-#include <math.h>
+#include <cmath>
+
+constexpr int PROJECTILE_BULLET = 1;
+constexpr int PROJECTILE_BULLET_AP = 2;
+constexpr int PROJECTILE_MISSILE = 3;
+constexpr int PROJECTILE_LANDMINE = 4;
 
 class Projectile
 {
