@@ -7,7 +7,7 @@ include_directories ( /System/Library/Frameworks )
 find_library(OpenGL_LIBRARY OpenGL )
 set(EXTRA_LIBS ${OpenGL_LIBRARY})
 
-add_executable(Tanks main.cpp)
+add_executable(Tanks main.cpp map.cpp projectile.cpp)
 
 #target_link_libraries(HelloWorld PNG::PNG)
 find_package(PNG REQUIRED)
