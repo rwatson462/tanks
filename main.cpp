@@ -55,14 +55,16 @@ private:
     int currentProjectile = PROJECTILE_BULLET;
 
     std::vector<olc::vi2d> tilesOfInterest;
-    std::vector<olc::vf2d> pointsOfInterest;
 
     std::vector<olc::vi2d> tracks;
 
     bool OnUserCreate() override
     {
-        mapWidth = ScreenWidth() / tileSize;
-        mapHeight = ScreenHeight() / tileSize;
+        mapWidth = 20;
+        mapHeight = 15;
+        tileSize = ScreenHeight() / mapHeight;
+        f_tileSize = (float)tileSize;
+        halfTileSize = tileSize / 2;
 
         grassSprite = new olc::Sprite("./assets/grasstop.png");
         dirtSprite = new olc::Sprite("./assets/dirt.png");
@@ -85,8 +87,8 @@ private:
         bulletDecal = new olc::Decal(bulletSprite);
         bulletDrawOffset = bulletSprite->width / 2;
 
-        playerX = ScreenWidth() / 2.0f;
-        playerY = ScreenHeight() - f_tileSize * 2.0f;
+        playerX = mapWidth * f_tileSize / 2.0f;
+        playerY = mapHeight * f_tileSize - f_tileSize * 2.0f + halfTileSize;
         playerDSin = sin(playerD);
         playerDCos = cos(playerD);
 
@@ -177,91 +179,62 @@ private:
 
     void checkCollision(float& diffX, float& diffY)
     {
-        tilesOfInterest.clear();
-        pointsOfInterest.clear();
-
         float newX = playerX + diffX;
         float newY = playerY + diffY;
 
         // check for see if an obstacle exists in the tile we'd be in if we applied the x/yDiff
-        // there are 8 possible tiles we *could* move into around the tank
-        // n, ne, e, se, s, sw, w, nw
 
-        // we can check each corner of the tank to see if that corner has moved to a different tile
-        // we're just using AABB for this, not checking the actual corners based on rotation
-        // playerX / playerY is the centre of the tank
+        int newX_tile, newY_tile;
+        int plrX_tile = (int)playerX / f_tileSize;
+        int plrY_tile = (int)playerY / f_tileSize;
 
-        // check each corner manually
+        // check edges, not corners
 
-        int plrX_tile, plrY_tile, newX_tile, newY_tile, newTile;
-
-        // top left corner
-        plrX_tile = (int)((playerX - f_tankBoundingSize) / tileSize);
-        plrY_tile = (int)((playerY - f_tankBoundingSize) / tileSize);
-
-        newX_tile = (int)((newX -f_tankBoundingSize) / tileSize);
-        newY_tile = (int)((newY -f_tankBoundingSize)/ tileSize );
-
-        pointsOfInterest.push_back({ (float)newX_tile , (float)newY_tile });
-        tilesOfInterest.push_back({ newX_tile, newY_tile });
-
-        newTile = obsMap[newY_tile * mapWidth + newX_tile];
-        if (newTile != L' ')
+        if (newX < playerX)
         {
-            if (newX_tile < plrX_tile) diffX = 0;
-            if (newY_tile < plrY_tile) diffY = 0;
+            // we're moving west
+            newX_tile = (int)((newX - f_tankBoundingSize) / f_tileSize);
+            newY_tile = (int)(newY / f_tileSize);
+            if (obsMap[newY_tile * mapWidth + newX_tile] != L' ')
+            {
+                diffX = 0;
+            }
+
+        }
+        else if (newX > playerX)
+        {
+            // we're moving east
+            newX_tile = (int)((newX + f_tankBoundingSize) / f_tileSize);
+            newY_tile = (int)(newY / f_tileSize);
+            if (obsMap[newY_tile * mapWidth + newX_tile] != L' ')
+            {
+                diffX = 0;
+            }
         }
 
-        // top right corner
-        plrX_tile = (int)((playerX + f_tankBoundingSize) / tileSize);
-        plrY_tile = (int)((playerY - f_tankBoundingSize) / tileSize);
-
-        newX_tile = (int)((newX + f_tankBoundingSize) / tileSize);
-        newY_tile = (int)((newY - f_tankBoundingSize) / tileSize);
-
-        pointsOfInterest.push_back({ (float)newX_tile, (float)newY_tile });
-        tilesOfInterest.push_back({ newX_tile, newY_tile });
-
-        newTile = obsMap[newY_tile * mapWidth + newX_tile];
-        if (newTile != L' ')
+        if (newY < playerY)
         {
-            if (newX > playerX) diffX = 0;
-            if (newY < playerY) diffY = 0;
+            // we're moving north
+            newX_tile = (int)(newX / f_tileSize);
+            newY_tile = (int)((newY + f_tankBoundingSize) / f_tileSize);
+            printf("%i %i\n", newX_tile, newY_tile);
+            if (obsMap[newY_tile * mapWidth + newX_tile] != L' ')
+            {
+                diffY = 0;
+            }
+
+        }
+        else if (newY > playerY)
+        {
+            // we're moving east
+            newX_tile = (int)(newX / f_tileSize);
+            newY_tile = (int)((newY - f_tankBoundingSize) / f_tileSize);
+            if (obsMap[newY_tile * mapWidth + newX_tile] != L' ')
+            {
+                diffY = 0;
+            }
         }
 
-        // bottom left corner
-        plrX_tile = (int)((playerX - f_tankBoundingSize) / tileSize);
-        plrY_tile = (int)((playerY - f_tankBoundingSize) / tileSize);
-
-        newX_tile = (int)((newX - f_tankBoundingSize) / tileSize);
-        newY_tile = (int)((newY + f_tankBoundingSize) / tileSize);
-
-        pointsOfInterest.push_back({ (float)newX_tile, (float)newY_tile });
-        tilesOfInterest.push_back({ newX_tile, newY_tile });
-
-        newTile = obsMap[newY_tile * mapWidth + newX_tile];
-        if (newTile != L' ')
-        {
-            if (newX_tile < plrX_tile) diffX = 0;
-            if (newY_tile < plrY_tile) diffY = 0;
-        }
-
-        // bottom right corner
-        plrX_tile = (int)((playerX + f_tankBoundingSize) / tileSize);
-        plrY_tile = (int)((playerY + f_tankBoundingSize) / tileSize);
-
-        newX_tile = (int)((newX + f_tankBoundingSize) / tileSize);
-        newY_tile = (int)((newY + f_tankBoundingSize) / tileSize);
-
-        pointsOfInterest.push_back({ (float)newX_tile, (float)newY_tile });
-        tilesOfInterest.push_back({ newX_tile, newY_tile });
-
-        newTile = obsMap[newY_tile * mapWidth + newX_tile];
-        if (newTile != L' ')
-        {
-            if (newX_tile < plrX_tile) diffX = 0;
-            if (newY_tile < plrY_tile) diffY = 0;
-        }
     }
 
     void moveTank(float fElapsedTime)
@@ -276,12 +249,12 @@ private:
             float newY = playerY - diffY;
 
             // check if the tank is leaving the world
-            if (newX < halfTileSize || newX + halfTileSize > ScreenWidth())
+            if (newX < halfTileSize || newX + halfTileSize > mapWidth * f_tileSize)
             {
                 diffX = 0;
             }
 
-            if (newY < halfTileSize || newY + halfTileSize > ScreenHeight())
+            if (newY < halfTileSize || newY + halfTileSize > mapHeight * f_tileSize)
             {
                 diffY = 0;
             }
@@ -293,33 +266,31 @@ private:
             playerX += diffX;
             playerY -= diffY;
         }
+
         if (GetKey(olc::S).bHeld)
         {
             // move backwards
             float diffX = fElapsedTime * tankMoveSpeed * playerDSin;
-            float diffY = fElapsedTime * tankMoveSpeed * playerDCos;
+            float diffY = -fElapsedTime * tankMoveSpeed * playerDCos;
             float newX = playerX + diffX;
             float newY = playerY + diffY;
 
             // check if the tank is leaving the world
-            if (playerX- diffX < halfTileSize || playerX- diffX + halfTileSize > ScreenWidth())
+            if (newX < halfTileSize || newX + halfTileSize > mapWidth * f_tileSize)
             {
                 diffX = 0;
             }
 
-            if (playerY+ diffY < halfTileSize || playerY+ diffY + halfTileSize > ScreenHeight())
+            if (newY < halfTileSize || newY + halfTileSize > mapHeight * f_tileSize)
             {
                 diffY = 0;
             }
-
-            tilesOfInterest.clear();
-            pointsOfInterest.clear();
 
             checkCollision(diffX, diffY);
 
             // make the move
             playerX -= diffX;
-            playerY += diffY;
+            playerY -= diffY;
         }
     }
 
@@ -396,7 +367,7 @@ private:
             projectile->update(fElapsedTime);
 
             // check if projectile is off screen
-            if (projectile->x < 0 || projectile->x >= ScreenWidth() || projectile->y < 0 || projectile->y > ScreenHeight())
+            if (projectile->x < 0 || projectile->x >= mapWidth * f_tileSize || projectile->y < 0 || projectile->y > mapHeight * f_tileSize)
             {
                 projectile->isAlive = false;
                 continue;
@@ -527,13 +498,6 @@ private:
             playerColour
         );
 
-        for (olc::vf2d point : pointsOfInterest)
-        {
-            DrawDecal(
-                point * f_tileSize,
-                bulletDecal
-            );
-        }
     }
 
     void renderBullets()
@@ -613,7 +577,7 @@ private:
 int main()
 {
     TanksGame game;
-    if( game.Construct(320, 240, 2, 2, false ) )
+    if( game.Construct(320, 240, 2, 2, true ) )
     {
         game.Start();
     }
