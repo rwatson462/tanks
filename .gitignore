@@ -6,6 +6,10 @@ cmake-build-debug
 # Visual studio files
 .vs
 Debug
+Tanks.sln
+Tanks.vcxproj
+Tanks.vcxproj.filters
+Tanks.vcxproj.user
 
 # OSX thumbnails file
 .DS_Store
