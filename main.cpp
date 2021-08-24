@@ -2,6 +2,7 @@
 #define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine/olcPixelGameEngine.h"
 #include "map.h"
+#include "tank.h"
 #include "projectile.cpp"
 #include <cmath>
 
@@ -19,7 +20,7 @@ private:
     bool isRunning = true;
     bool isPaused = false;
 
-    float f_tileSize, f_halfTileSize, f_tankBoundingSize;
+    float f_tankBoundingSize;
     olc::Sprite *grassSprite;
     olc::Sprite *dirtSprite;
     olc::Decal *grassDecal;
@@ -42,12 +43,8 @@ private:
     float bulletDrawOffset;
     std::vector<Projectile*> projectiles;
 
-    float playerX = 0.0f, playerY = 0.0f, playerD = 0.0f, playerA = 0.0f;
-    float playerDSin = 0.0f, playerDCos = 0.0f;
-    olc::Pixel playerColour;
-    float tankRotateSpeed = 2.0f;
-    float tankMoveSpeed = 40.0f;
-    int currentProjectile = PROJECTILE_BULLET;
+    Tank* player;
+    float playerA = 0.0f;
 
     std::vector<olc::vi2d> tilesOfInterest;
 
@@ -59,9 +56,9 @@ private:
     {
         map = new TileMap();
         map->load("start");
-        f_tileSize = (float)ScreenHeight() / (float)map->mapHeight;
-        f_halfTileSize = f_tileSize / 2.0f;
-        f_tankBoundingSize = f_tileSize * 0.4f; // distance from centre of tank to edge of hit box
+        map->f_tileSize = (float)ScreenHeight() / (float)map->mapHeight;
+        map->f_halfTileSize = map->f_tileSize / 2.0f;
+        f_tankBoundingSize = map->f_tileSize * 0.4f; // distance from centre of tank to edge of hit box
 
         grassSprite = new olc::Sprite("./assets/grasstop.png");
         dirtSprite = new olc::Sprite("./assets/dirt.png");
@@ -84,12 +81,14 @@ private:
         bulletDecal = new olc::Decal(bulletSprite);
         bulletDrawOffset = bulletSprite->width / 2.0f;
 
-        playerX = map->mapWidth * f_tileSize / 2.0f;
-        playerY = map->mapHeight * f_tileSize - f_tileSize * 2.0f + f_halfTileSize;
-        playerDSin = sin(playerD);
-        playerDCos = cos(playerD);
-
-        playerColour = olc::Pixel(255, 128, 255, 255);
+        player = new Tank();
+        player->x = map->mapWidth * map->f_tileSize / 2.0f;
+        player->y = map->mapHeight * map->f_tileSize - map->f_tileSize * 2.0f + map->f_halfTileSize;
+        player->setAngle(0.0f);
+        player->speed = 40.0f;
+        player->turnSpeed = 2.0f;
+        player->tint = olc::Pixel(255, 200, 255, 255);
+        player->currentProjectile = PROJECTILE_BULLET;
 
         return true;
     }
@@ -122,7 +121,8 @@ private:
             return;
         }
 
-        handlePlayerMovement(fElapsedTime);
+        player->update(fElapsedTime, this, map);
+        rotateTurret(fElapsedTime);
         changeWeapon();
         shoot();
         updateProjectiles(fElapsedTime);
@@ -132,46 +132,27 @@ private:
     {
         if( !GetKey(olc::TAB).bPressed) return;
 
-        switch(currentProjectile)
+        switch(player->currentProjectile)
         {
             case PROJECTILE_BULLET:
-                currentProjectile = PROJECTILE_BULLET_AP;
+                player->currentProjectile = PROJECTILE_BULLET_AP;
                 break;
             case PROJECTILE_BULLET_AP:
-                currentProjectile = PROJECTILE_MISSILE;
+                player->currentProjectile = PROJECTILE_MISSILE;
                 break;
             case PROJECTILE_MISSILE:
-                currentProjectile = PROJECTILE_LANDMINE;
+                player->currentProjectile = PROJECTILE_LANDMINE;
                 break;
             case PROJECTILE_LANDMINE:
-                currentProjectile = PROJECTILE_BULLET;
+                player->currentProjectile = PROJECTILE_BULLET;
                 break;
-        }
-    }
-
-    void rotateChassis(float fElapsedTime)
-    {
-        // tank chassis rotation
-        if (GetKey(olc::A).bHeld)
-        {
-            playerD -= fElapsedTime * tankRotateSpeed;
-            if (playerD < 0) playerD += 2 * M_PI;
-            playerDSin = sin(playerD);
-            playerDCos = cos(playerD);
-        }
-        if (GetKey(olc::D).bHeld)
-        {
-            playerD += fElapsedTime * tankRotateSpeed;
-            if (playerD > 2 * M_PI) playerD -= 2 * M_PI;
-            playerDSin = sin(playerD);
-            playerDCos = cos(playerD);
         }
     }
 
     void checkCollision(float& diffX, float& diffY)
     {
-        float newX = playerX + diffX;
-        float newY = playerY + diffY;
+        float newX = player->x + diffX;
+        float newY = player->y + diffY;
 
         // check for see if an obstacle exists in the tile we'd be in if we applied the x/yDiff
 
@@ -179,107 +160,50 @@ private:
 
         // check edges, not corners
 
-        if (newX < playerX)
+        if (newX < player->x)
         {
             // we're moving west
-            newX_tile = (int)((newX - f_tankBoundingSize) / f_tileSize);
-            newY_tile = (int)(newY / f_tileSize);
+            newX_tile = (int)((newX - f_tankBoundingSize) / map->f_tileSize);
+            newY_tile = (int)(newY / map->f_tileSize);
             if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
             {
                 diffX = 0;
             }
 
         }
-        else if (newX > playerX)
+        else if (newX > player->x)
         {
             // we're moving east
-            newX_tile = (int)((newX + f_tankBoundingSize) / f_tileSize);
-            newY_tile = (int)(newY / f_tileSize);
+            newX_tile = (int)((newX + f_tankBoundingSize) / map->f_tileSize);
+            newY_tile = (int)(newY / map->f_tileSize);
             if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
             {
                 diffX = 0;
             }
         }
 
-        if (newY < playerY)
+        if (newY < player->y)
         {
             // we're moving north
-            newX_tile = (int)(newX / f_tileSize);
-            newY_tile = (int)((newY + f_tankBoundingSize) / f_tileSize);
+            newX_tile = (int)(newX / map->f_tileSize);
+            newY_tile = (int)((newY + f_tankBoundingSize) / map->f_tileSize);
             if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
             {
                 diffY = 0;
             }
 
         }
-        else if (newY > playerY)
+        else if (newY > player->y)
         {
             // we're moving east
-            newX_tile = (int)(newX / f_tileSize);
-            newY_tile = (int)((newY - f_tankBoundingSize) / f_tileSize);
+            newX_tile = (int)(newX / map->f_tileSize);
+            newY_tile = (int)((newY - f_tankBoundingSize) / map->f_tileSize);
             if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
             {
                 diffY = 0;
             }
         }
 
-    }
-
-    void moveTank(float fElapsedTime)
-    {
-        // player movement
-        if (GetKey(olc::W).bHeld)
-        {
-            // move forwards
-            float diffX = fElapsedTime * tankMoveSpeed * playerDSin;
-            float diffY = fElapsedTime * tankMoveSpeed * playerDCos;
-            float newX = playerX + diffX;
-            float newY = playerY - diffY;
-
-            // check if the tank is leaving the world
-            if (newX < f_halfTileSize || newX + f_halfTileSize > map->mapWidth * f_tileSize)
-            {
-                diffX = 0;
-            }
-
-            if (newY < f_halfTileSize || newY + f_halfTileSize > map->mapHeight * f_tileSize)
-            {
-                diffY = 0;
-            }
-
-            // diffX and diffY are passed by reference so will be updated if needed
-            checkCollision(diffX, diffY);
-
-            // we're allowed to move
-            playerX += diffX;
-            playerY -= diffY;
-        }
-
-        if (GetKey(olc::S).bHeld)
-        {
-            // move backwards
-            float diffX = fElapsedTime * tankMoveSpeed * playerDSin;
-            float diffY = -fElapsedTime * tankMoveSpeed * playerDCos;
-            float newX = playerX + diffX;
-            float newY = playerY + diffY;
-
-            // check if the tank is leaving the world
-            if (newX < f_halfTileSize || newX + f_halfTileSize > map->mapWidth * f_tileSize)
-            {
-                diffX = 0;
-            }
-
-            if (newY < f_halfTileSize || newY + f_halfTileSize > map->mapHeight * f_tileSize)
-            {
-                diffY = 0;
-            }
-
-            checkCollision(diffX, diffY);
-
-            // make the move
-            playerX -= diffX;
-            playerY -= diffY;
-        }
     }
 
     void rotateTurret(float fElapsedTime)
@@ -287,8 +211,8 @@ private:
         // turret always points at mouse
 
         // calculate x/y distances from player to mouse
-        float xD = GetMouseX() - float(playerX);
-        float yD = -(GetMouseY() - float(playerY));
+        float xD = GetMouseX() - float(player->x);
+        float yD = -(GetMouseY() - float(player->y));
 
         // handle possible divide by zero errors
         if (yD == 0)
@@ -321,13 +245,13 @@ private:
             // attempt to fire whatever the current projectile is
 
             // adjust start position of bullet so it appears to come from the end of the turret
-            float startX = playerX + 8.0f * sin(playerA);
-            float startY = playerY - 8.0f * cos(playerA);
+            float startX = player->x + 8.0f * sin(playerA);
+            float startY = player->y - 8.0f * cos(playerA);
 
             // TODO create struct of all projectiles with their stats so we don't need to refer to all of them in here
             Projectile* b;
 
-            switch( currentProjectile )
+            switch(player->currentProjectile)
             {
                 case PROJECTILE_BULLET:
                     b = new Projectile(PROJECTILE_BULLET, startX, startY, playerA, 200.0f, 0.2f);
@@ -339,7 +263,7 @@ private:
                     b = new Projectile(PROJECTILE_MISSILE, startX, startY, playerA, 50.0f, 10.0f);
                     break;
                 case PROJECTILE_LANDMINE:
-                    b = new Projectile(PROJECTILE_LANDMINE, playerX, playerY, playerA, 0.0f, 10.0f);
+                    b = new Projectile(PROJECTILE_LANDMINE, player->x, player->y, playerA, 0.0f, 10.0f);
                     break;
             }
 
@@ -356,9 +280,9 @@ private:
 
             // check if projectile is off screen
             if (
-                    projectile->x < 0 || projectile->x >= map->mapWidth * f_tileSize
+                    projectile->x < 0 || projectile->x >= map->mapWidth * map->f_tileSize
                     ||
-                    projectile->y < 0 || projectile->y > map->mapHeight * f_tileSize
+                    projectile->y < 0 || projectile->y > map->mapHeight * map->f_tileSize
                 )
             {
                 projectile->isAlive = false;
@@ -368,8 +292,8 @@ private:
             // check collisions with obstacles and other tanks
 
             // convert projectile's x/y to map coords
-            int projX = floor(projectile->x / f_tileSize);
-            int projY = floor(projectile->y / f_tileSize);
+            int projX = floor(projectile->x / map->f_tileSize);
+            int projY = floor(projectile->y / map->f_tileSize);
 
             wchar_t obs = map->getObstacleTile(projX, projY);
             if (obs == L'o')
@@ -381,7 +305,7 @@ private:
             {
                 // we're colliding with a destructable wall, destruct it
                 projectile->isAlive = false;
-                map->alterObstacleTile(projX,projY,L' ');
+                map->alterObstacleTile(projX, projY, L' ');
             }
         }
 
@@ -403,18 +327,6 @@ private:
 
     }
 
-    void handlePlayerMovement(float fElapsedTime)
-    {
-        // handle A/D
-        rotateChassis(fElapsedTime);
-
-        // handle W/S
-        moveTank(fElapsedTime);
-
-        // point turret at mouse
-        rotateTurret(fElapsedTime);
-    }
-
     void renderMap()
     {
         // The tile map
@@ -426,14 +338,14 @@ private:
                 if (tileId == L'.')
                 {
                     DrawDecal(
-                        { x * f_tileSize, y * f_tileSize },
+                        { x * map->f_tileSize, y * map->f_tileSize },
                         grassDecal
                     );
                 }
                 else if (tileId == L'#')
                 {
                     DrawDecal(
-                        { x * f_tileSize, y * f_tileSize },
+                        { x * map->f_tileSize, y * map->f_tileSize },
                         dirtDecal
                     );
                 }
@@ -448,11 +360,11 @@ private:
                 wchar_t obsId = map->getObstacleTile(x,y);
                 if (obsId == L'x')
                 {
-                    DrawDecal({ x * f_tileSize, y * f_tileSize }, destructableWallDecal);
+                    DrawDecal({ x * map->f_tileSize, y * map->f_tileSize }, destructableWallDecal);
                 }
                 else if (obsId == L'o')
                 {
-                    DrawDecal({ x * f_tileSize, y * f_tileSize }, solidWallDecal);
+                    DrawDecal({ x * map->f_tileSize, y * map->f_tileSize }, solidWallDecal);
                 }
             }
         }
@@ -464,30 +376,30 @@ private:
         for (olc::vi2d tile: tilesOfInterest)
         {
             FillRectDecal(
-                tile * f_tileSize,
-                { f_tileSize, f_tileSize },
+                tile * map->f_tileSize,
+                { map->f_tileSize, map->f_tileSize },
                 olc::Pixel(255, 0, 0, 64)
             );
         }
 
         // draw the tank chassis
         DrawRotatedDecal(
-            { playerX, playerY },
+            { player->x, player->y },
             tankChassisDecal,
-            playerD,
-            {float(f_halfTileSize), float(f_halfTileSize) },
+            player->a,
+            {map->f_halfTileSize, map->f_halfTileSize },
             {1.0f, 1.0f},
-            playerColour
+            player->tint
         );
 
         // draw the turret
         DrawRotatedDecal(
-            { playerX, playerY },
+            { player->x, player->y },
             tankTurretDecal,
-            playerA,
-            {float(f_halfTileSize), float(f_halfTileSize) },
+            player->a,
+            {map->f_halfTileSize, map->f_halfTileSize },
             { 1.0f, 1.0f },
-            playerColour
+            player->tint
         );
 
     }
@@ -513,34 +425,34 @@ private:
     {
         // draw player location
         DrawStringDecal(
-            {(float)f_halfTileSize, (float)f_halfTileSize/2.0f },
-            "{ " + std::to_string((int)(playerX/f_tileSize)) + " / " + std::to_string((int)(playerY/f_tileSize)) + " }",
+            {map->f_halfTileSize, map->f_halfTileSize/2.0f },
+            "{ " + std::to_string((int)(player->x / map->f_tileSize)) + " / " + std::to_string((int)(player->y / map->f_tileSize)) + " }",
             olc::WHITE
         );
 
-        switch(currentProjectile)
+        switch(player->currentProjectile)
         {
             case PROJECTILE_BULLET:
                 DrawStringDecal(
-                        {(float)f_halfTileSize, ScreenHeight() - 12.0f},
+                        { map->f_halfTileSize, ScreenHeight() - 12.0f},
                         "Bullet"
                         );
                 break;
             case PROJECTILE_BULLET_AP:
                 DrawStringDecal(
-                        {(float)f_halfTileSize, ScreenHeight() - 12.0f},
+                        { map->f_halfTileSize, ScreenHeight() - 12.0f},
                         "Armour-piercing Bullet"
                 );
                 break;
             case PROJECTILE_MISSILE:
                 DrawStringDecal(
-                        {(float)f_halfTileSize, ScreenHeight() - 12.0f},
+                        { map->f_halfTileSize, ScreenHeight() - 12.0f},
                         "Missile"
                 );
                 break;
             case PROJECTILE_LANDMINE:
                 DrawStringDecal(
-                        {(float)f_halfTileSize, ScreenHeight() - 12.0f},
+                        { map->f_halfTileSize, ScreenHeight() - 12.0f},
                         "Landmine"
                 );
                 break;
@@ -549,7 +461,7 @@ private:
         if( isPaused )
         {
             DrawStringDecal(
-                { (float)ScreenWidth()/4, (float)ScreenHeight()/2 },
+                { ScreenWidth()/4.0f, ScreenHeight()/2.0f },
                 "Paused. Press (P)"
             );
         }

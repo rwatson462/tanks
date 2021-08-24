@@ -9,6 +9,7 @@ class TileMap
 {
 public:
     int mapWidth, mapHeight;
+    float f_tileSize, f_halfTileSize;
 
     void load(std::string mapName);
     wchar_t getMapTile(int tileX, int tileY);
