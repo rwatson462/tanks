@@ -1,9 +1,17 @@
+/*
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include "tank.h"
 #include "olcPixelGameEngine/olcPixelGameEngine.h"
 #include "map.h"
 
+//private
+void Tank::setAngle(float newA)
+{
+    a = newA;
+    sinA = sin(a);
+    cosA = cos(a);
+}
 
 //private
 void Tank::move(float fElapsedTime, int direction, olc::PixelGameEngine* game, TileMap* map)
@@ -86,3 +94,4 @@ void Tank::update(float fElapsedTime, olc::PixelGameEngine* game, TileMap* map)
         rotate(fElapsedTime, 1);
     }
 }
+*/
