@@ -3,6 +3,7 @@
 #include "olcPixelGameEngine/olcPixelGameEngine.h"
 #include "map.h"
 #include "tank.h"
+#include "particle.h"
 #include "projectile.cpp"
 #include <cmath>
 
@@ -47,10 +48,10 @@ private:
     float playerA = 0.0f;
 
     std::vector<olc::vi2d> tilesOfInterest;
-
     std::vector<olc::vi2d> tracks;
 
     TileMap* map;
+    ParticleEmitter* particleEmitter;
 
     bool OnUserCreate() override
     {
@@ -80,6 +81,8 @@ private:
         bulletSprite = new olc::Sprite("./assets/bullet.png");
         bulletDecal = new olc::Decal(bulletSprite);
         bulletDrawOffset = bulletSprite->width / 2.0f;
+
+        particleEmitter = new ParticleEmitter();
 
         player = new Tank();
         player->x = map->mapWidth * map->f_tileSize / 2.0f;
@@ -122,10 +125,10 @@ private:
         }
 
         player->update(fElapsedTime, this, map);
-        rotateTurret(fElapsedTime);
         changeWeapon();
         shoot();
         updateProjectiles(fElapsedTime);
+        particleEmitter->update(fElapsedTime);
     }
 
     void changeWeapon()
@@ -206,37 +209,6 @@ private:
 
     }
 
-    void rotateTurret(float fElapsedTime)
-    {
-        // turret always points at mouse
-
-        // calculate x/y distances from player to mouse
-        float xD = GetMouseX() - float(player->x);
-        float yD = -(GetMouseY() - float(player->y));
-
-        // handle possible divide by zero errors
-        if (yD == 0)
-        {
-            if (xD > 0)
-            {
-                playerA = M_PI * 0.5;
-            }
-            else if (xD < 0)
-            {
-                playerA = M_PI * 1.5;
-            }
-            else
-            {
-                playerA = 0;
-            }
-        }
-        else
-        {
-            playerA = atan(xD / yD);
-            if (yD < 0) playerA += M_PI;
-        }
-    }
-
     void shoot()
     {
         // left mouse = bullet
@@ -245,8 +217,8 @@ private:
             // attempt to fire whatever the current projectile is
 
             // adjust start position of bullet so it appears to come from the end of the turret
-            float startX = player->x + 8.0f * sin(playerA);
-            float startY = player->y - 8.0f * cos(playerA);
+            float startX = player->x + 8.0f * sin(player->d);
+            float startY = player->y - 8.0f * cos(player->d);
 
             // TODO create struct of all projectiles with their stats so we don't need to refer to all of them in here
             Projectile* b;
@@ -254,16 +226,16 @@ private:
             switch(player->currentProjectile)
             {
                 case PROJECTILE_BULLET:
-                    b = new Projectile(PROJECTILE_BULLET, startX, startY, playerA, 200.0f, 0.2f);
+                    b = new Projectile(PROJECTILE_BULLET, startX, startY, player->d, 200.0f, 0.2f);
                     break;
                 case PROJECTILE_BULLET_AP:
-                    b = new Projectile(PROJECTILE_BULLET_AP, startX, startY, playerA, 150.0f, 2.0f);
+                    b = new Projectile(PROJECTILE_BULLET_AP, startX, startY, player->d, 150.0f, 2.0f);
                     break;
                 case PROJECTILE_MISSILE:
-                    b = new Projectile(PROJECTILE_MISSILE, startX, startY, playerA, 50.0f, 10.0f);
+                    b = new Projectile(PROJECTILE_MISSILE, startX, startY, player->d, 50.0f, 10.0f);
                     break;
                 case PROJECTILE_LANDMINE:
-                    b = new Projectile(PROJECTILE_LANDMINE, player->x, player->y, playerA, 0.0f, 10.0f);
+                    b = new Projectile(PROJECTILE_LANDMINE, player->x, player->y, player->d, 0.0f, 10.0f);
                     break;
             }
 
@@ -298,8 +270,10 @@ private:
             wchar_t obs = map->getObstacleTile(projX, projY);
             if (obs == L'o')
             {
-                // we're colliding with a solid wall, just delete ourselves
+                // we're colliding with a solid wall, mark ourselves as no longer slive
                 projectile->isAlive = false;
+                // and create a fancy explosion animation with particles
+                particleEmitter->create(projectile->x, projectile->y);
             }
             else if (obs == L'x')
             {
@@ -396,7 +370,7 @@ private:
         DrawRotatedDecal(
             { player->x, player->y },
             tankTurretDecal,
-            player->a,
+            player->d,
             {map->f_halfTileSize, map->f_halfTileSize },
             { 1.0f, 1.0f },
             player->tint
@@ -425,9 +399,8 @@ private:
     {
         // draw player location
         DrawStringDecal(
-            {map->f_halfTileSize, map->f_halfTileSize/2.0f },
-            "{ " + std::to_string((int)(player->x / map->f_tileSize)) + " / " + std::to_string((int)(player->y / map->f_tileSize)) + " }",
-            olc::WHITE
+            { map->f_halfTileSize, map->f_halfTileSize / 2.0f },
+            "{ " + std::to_string((int)(player->x / map->f_tileSize)) + " / " + std::to_string((int)(player->y / map->f_tileSize)) + " }"
         );
 
         switch(player->currentProjectile)
@@ -472,16 +445,16 @@ private:
         renderMap();
         renderPlayer();
         renderBullets();
+        particleEmitter->render(this);
         renderUI();
     }
 };
 
 
-
 int main()
 {
     TanksGame game;
-    if( game.Construct(320, 240, 2, 2, false ) )
+    if( game.Construct(320, 240, 2, 2, true ) )
     {
         game.Start();
     }
