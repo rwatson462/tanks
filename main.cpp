@@ -59,7 +59,6 @@ private:
         map->load("start");
         map->f_tileSize = (float)ScreenHeight() / (float)map->mapHeight;
         map->f_halfTileSize = map->f_tileSize / 2.0f;
-        f_tankBoundingSize = map->f_tileSize * 0.4f; // distance from centre of tank to edge of hit box
 
         grassSprite = new olc::Sprite("./assets/grasstop.png");
         dirtSprite = new olc::Sprite("./assets/dirt.png");
@@ -92,6 +91,7 @@ private:
         player->turnSpeed = 2.0f;
         player->tint = olc::Pixel(255, 200, 255, 255);
         player->currentProjectile = PROJECTILE_BULLET;
+        player->collisionSize = map->f_tileSize * 0.4f; // distance from centre of tank to edge of hit box
 
         return true;
     }
@@ -124,6 +124,11 @@ private:
             return;
         }
 
+        if (GetKey(olc::R).bPressed)
+        {
+            map->load("start");
+        }
+
         player->update(fElapsedTime, this, map);
         changeWeapon();
         shoot();
@@ -150,63 +155,6 @@ private:
                 player->currentProjectile = PROJECTILE_BULLET;
                 break;
         }
-    }
-
-    void checkCollision(float& diffX, float& diffY)
-    {
-        float newX = player->x + diffX;
-        float newY = player->y + diffY;
-
-        // check for see if an obstacle exists in the tile we'd be in if we applied the x/yDiff
-
-        int newX_tile, newY_tile;
-
-        // check edges, not corners
-
-        if (newX < player->x)
-        {
-            // we're moving west
-            newX_tile = (int)((newX - f_tankBoundingSize) / map->f_tileSize);
-            newY_tile = (int)(newY / map->f_tileSize);
-            if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
-            {
-                diffX = 0;
-            }
-
-        }
-        else if (newX > player->x)
-        {
-            // we're moving east
-            newX_tile = (int)((newX + f_tankBoundingSize) / map->f_tileSize);
-            newY_tile = (int)(newY / map->f_tileSize);
-            if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
-            {
-                diffX = 0;
-            }
-        }
-
-        if (newY < player->y)
-        {
-            // we're moving north
-            newX_tile = (int)(newX / map->f_tileSize);
-            newY_tile = (int)((newY + f_tankBoundingSize) / map->f_tileSize);
-            if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
-            {
-                diffY = 0;
-            }
-
-        }
-        else if (newY > player->y)
-        {
-            // we're moving east
-            newX_tile = (int)(newX / map->f_tileSize);
-            newY_tile = (int)((newY - f_tankBoundingSize) / map->f_tileSize);
-            if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
-            {
-                diffY = 0;
-            }
-        }
-
     }
 
     void shoot()
@@ -276,10 +224,10 @@ private:
                 switch( player->currentProjectile)
                 {
                     case PROJECTILE_BULLET:
-                        particleEmitter->create(projectile->x, projectile->y, rand()%5, 0.5f, olc::YELLOW);
+                        particleEmitter->create(projectile->x, projectile->y, rand()%5, 1, 0.5f, olc::YELLOW);
                         break;
                     case PROJECTILE_BULLET_AP:
-                        particleEmitter->create(projectile->x, projectile->y, rand()%15, 0.5f, olc::RED);
+                        particleEmitter->create(projectile->x, projectile->y, rand()%15, 2, 0.5f, olc::RED);
                         break;
                 }
 
@@ -289,6 +237,40 @@ private:
                 // we're colliding with a destructable wall, destruct it
                 projectile->isAlive = false;
                 map->alterObstacleTile(projX, projY, L' ');
+
+                switch (player->currentProjectile)
+                {
+                case PROJECTILE_BULLET:
+                    particleEmitter->create(projectile->x, projectile->y, rand() % 5, 1, 0.5f, olc::YELLOW);
+                    break;
+                case PROJECTILE_BULLET_AP:
+                    particleEmitter->create(projectile->x, projectile->y, rand() % 15, 2, 0.5f, olc::RED);
+                    break;
+                }
+
+                // create some particles to show the block being destroyed
+                float worldX = projX * map->f_tileSize;
+                float worldY = projY * map->f_tileSize;
+                particleEmitter->create(
+                    worldX + map->f_halfTileSize/2, 
+                    worldY + map->f_halfTileSize/2, 
+                    rand() % 50, 4, 0.5f, olc::GREY
+                );
+                particleEmitter->create(
+                    worldX + map->f_halfTileSize*1.5,
+                    worldY + map->f_halfTileSize/2, 
+                    rand() % 50, 4, 0.5f, olc::GREY
+                );
+                particleEmitter->create(
+                    worldX + map->f_halfTileSize/2,
+                    worldY + map->f_halfTileSize*1.5, 
+                    rand() % 50, 4, 0.5f, olc::GREY
+                );
+                particleEmitter->create(
+                    worldX + map->f_halfTileSize*1.5, 
+                    worldY + map->f_halfTileSize*1.5, 
+                    rand() % 50, 4, 0.5f, olc::GREY
+                );
             }
         }
 
@@ -412,29 +394,52 @@ private:
             "{ " + std::to_string((int)(player->x / map->f_tileSize)) + " / " + std::to_string((int)(player->y / map->f_tileSize)) + " }"
         );
 
+        float top = ScreenHeight() - map->f_halfTileSize * 1.5;
+        float left = map->f_halfTileSize / 2;
+
         switch(player->currentProjectile)
         {
             case PROJECTILE_BULLET:
+                FillRectDecal(
+                    { left - 1, top - 1 }, 
+                    { 6 * map->f_halfTileSize+2, map->f_halfTileSize+2 },
+                    olc::Pixel(0, 0, 0, 96)
+                );
                 DrawStringDecal(
-                        { map->f_halfTileSize, ScreenHeight() - 12.0f},
+                    { left, top },
                         "Bullet"
                         );
                 break;
             case PROJECTILE_BULLET_AP:
+                FillRectDecal(
+                    { left - 1, top - 1 }, 
+                    { 22 * map->f_halfTileSize + 2, map->f_halfTileSize + 2 },
+                    olc::Pixel(0, 0, 0, 96)
+                );
                 DrawStringDecal(
-                        { map->f_halfTileSize, ScreenHeight() - 12.0f},
+                    { left, top },
                         "Armour-piercing Bullet"
                 );
                 break;
             case PROJECTILE_MISSILE:
+                FillRectDecal(
+                    { left - 1, top - 1 },
+                    { 7 * map->f_halfTileSize + 2, map->f_halfTileSize + 2 },
+                    olc::Pixel(0, 0, 0, 96)
+                );
                 DrawStringDecal(
-                        { map->f_halfTileSize, ScreenHeight() - 12.0f},
+                        { left, top },
                         "Missile"
                 );
                 break;
             case PROJECTILE_LANDMINE:
+                FillRectDecal(
+                    { left - 1, top - 1 },
+                    { 8 * map->f_halfTileSize + 2, map->f_halfTileSize + 2 },
+                    olc::Pixel(0, 0, 0, 96)
+                );
                 DrawStringDecal(
-                        { map->f_halfTileSize, ScreenHeight() - 12.0f},
+                        { left, top },
                         "Landmine"
                 );
                 break;
@@ -463,7 +468,7 @@ private:
 int main()
 {
     TanksGame game;
-    if( game.Construct(320, 240, 2, 2, true ) )
+    if( game.Construct(320, 240, 8, 8, false ) )
     {
         game.Start();
     }

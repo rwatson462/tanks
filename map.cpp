@@ -25,41 +25,43 @@ wchar_t TileMap::getObstacleTile(int tileX, int tileY)
 void TileMap::loadMap(std::string mapName)
 {
     // small map
-    this->map =  L"####################";
-    this->map += L"#..................#";
-    this->map += L"#..................#";
-    this->map += L"#..................#";
-    this->map += L"#..................#";
-    this->map += L"#..................#";
-    this->map += L"#..................#";
-    this->map += L"#..................#";
-    this->map += L"#..................#";
-    this->map += L"#..................#";
-    this->map += L"#..................#";
-    this->map += L"#..................#";
-    this->map += L"#..................#";
-    this->map += L"#..................#";
-    this->map += L"####################";
+    //this->map =  L"####################";
+    this->map =  L"....................";
+    this->map += L"....................";
+    this->map += L"....................";
+    this->map += L"....................";
+    this->map += L"....................";
+    this->map += L"....................";
+    this->map += L"....................";
+    this->map += L"....................";
+    this->map += L"....................";
+    this->map += L"....................";
+    this->map += L"....................";
+    this->map += L"....................";
+    this->map += L"....................";
+    this->map += L"....................";
+    this->map += L"....................";
+    //this->map += L"####################";
 }
 
 void TileMap::loadMapObstacles(std::string mapName)
 {
     // todo change this so it builds a lit of obstacles and refactor it into loadMap above
-    this->obsMap =  L"                    ";
-    this->obsMap += L"                    ";
-    this->obsMap += L"   oo xx oo xx oo   ";
-    this->obsMap += L"   o            o   ";
-    this->obsMap += L"   o   xxxxxx   o   ";
-    this->obsMap += L"   o            o   ";
-    this->obsMap += L"   o   xxxxxx   o   ";
-    this->obsMap += L"   o            o   ";
-    this->obsMap += L"   oo xx oo xx oo   ";
-    this->obsMap += L"                    ";
-    this->obsMap += L"                    ";
-    this->obsMap += L"                    ";
-    this->obsMap += L"  oooooooooooooooo  ";
-    this->obsMap += L"                    ";
-    this->obsMap += L"                    ";
+    this->obsMap =  L"oooooooooooooooooooo";
+    this->obsMap += L"o                  o";
+    this->obsMap += L"o    o x  x  x     o";
+    this->obsMap += L"o    x    o        o";
+    this->obsMap += L"o    x          x  o";
+    this->obsMap += L"o   oxxxxxxxxo     o";
+    this->obsMap += L"o        x         o";
+    this->obsMap += L"o      o     x     o";
+    this->obsMap += L"o                  o";
+    this->obsMap += L"o    ooo oo ooo    o";
+    this->obsMap += L"o                  o";
+    this->obsMap += L"o oooo oooooo oooo o";
+    this->obsMap += L"o                  o";
+    this->obsMap += L"o                  o";
+    this->obsMap += L"oooooooooooooooooooo";
 }
 
 

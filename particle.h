@@ -6,28 +6,38 @@
 #include "olcPixelGameEngine/olcPixelGameEngine.h"
 
 
+
+constexpr int _MAX_PARTICLE_COUNT = 1000;
+
 class Particle
 {
 public:
-	float x = 0.0f;
-	float y = 0.0f;
-	float life = 0.0f;
-	float lifeTimeMax = 0.0f;
-	olc::Pixel colour;
 	bool alive = true;
-	float a = 0.0f;
 
-	Particle(int x, int y, float life, float angle, olc::Pixel colour)
+	Particle(int x, int y, float s, float life, float angle, olc::Pixel colour)
 	{
+		// starting position of particle
 		this->x = (float)x;
 		this->y = (float)y;
-	    this->a = angle;
+
+		// size in pixels when drawing the particle
+		this->s = s;
+
+		// time in seconds that this particle will live for
 		this->life = this->lifeTimeMax = life;
+
+		// colour of the particle
 		this->colour = colour;
+
+		// preconfigure the x/y changes to this particle
+		// 4.0 is an arbitrary speed multiplier
+		xOffset = sin(angle) / 4.0f;
+		yOffset = cos(angle) / 4.0f;
 	}
 
 	void update(float fElapsedTime)
 	{
+		// reduce remaining lifetime of the particle and mark is as dead when appropriate
 		this->life -= fElapsedTime;
 		if (this->life <= 0)
 		{
@@ -35,10 +45,11 @@ public:
 			return;
 		}
 
-		// move the particle
-		x += sin(a);
-		y += cos(a);
+		// move the particle by an arbitrary amount
+		x += xOffset;
+		y += yOffset;
 
+		// fade out as we get towards death
 		colour.a = life / lifeTimeMax * 255;
 	}
 
@@ -46,10 +57,20 @@ public:
 	{
 		game->FillRectDecal(
 			{ x,y },
-			{ 1.0f, 1.0f },
+			{ s,s },
 			colour
 		);
 	}
+
+private:
+	float x = 0.0f;
+	float y = 0.0f;
+	float xOffset = 0.0f;
+	float yOffset = 0.0f;
+	float s = 1.0f;
+	float life = 0.0f;
+	float lifeTimeMax = 0.0f;
+	olc::Pixel colour;
 };
 
 
@@ -57,50 +78,61 @@ class ParticleEmitter
 {
 public:
 
-	void create(int x, int y, int count = 1, float max_life = 1.0f, olc::Pixel colour = olc::WHITE)
+	void create(int x, int y, int count = 1, int size = 1, float max_life = 1.0f, olc::Pixel colour = olc::WHITE)
 	{
 	    float life, angle;
+		int index;
+
 	    for( int i = 0; i <= count; i++ ) {
-            life = (float) (rand() / (RAND_MAX / max_life));
-            angle = (float) (rand() / (RAND_MAX / (M_PI * 2)));
-            particles.push_back(new Particle(x, y, life, angle, colour));
+
+			index = -1;
+
+			for (int j = 0; j < _MAX_PARTICLE_COUNT; j++)
+			{
+				if (particleList[j] == nullptr)
+				{
+					index = j;
+					break;
+				}
+			}
+
+			if (index == -1)
+			{
+				printf("All particle slots in use!\n");
+				return;
+			}
+
+			particleList[index] = new Particle(
+				x, y, size,
+				(float)(rand() / (RAND_MAX / max_life)),
+				(float)(rand() / (RAND_MAX / (M_PI * 2))),
+				colour
+			);
         }
 	}
 
 	void update(float fElapsedTime)
 	{
-		for (Particle* p : particles)
+		for( int i = 0; i < _MAX_PARTICLE_COUNT; i++)
 		{
-			p->update(fElapsedTime);
-		}
+			if (particleList[i] == nullptr) continue;
 
-		// loop over particles, removing dead ones
-		if (!particles.empty())
-		{
-			// not 100% sure what idx is, possibly an integer index that we can use to break the chain in the list
-			// remove_it sorts the particles with all that are alive first, followed by all that are not alive
-			// then the first not-alive particle is removed which means all other not-alive particles are also
-			// deleted
-			auto idx = remove_if(particles.begin(), particles.end(), [&](Particle* p) {
-				return !p->alive;
-				});
-			if (idx != particles.end())
-			{
-				particles.erase(idx);
-			}
+			particleList[i]->update(fElapsedTime);
+			if (!particleList[i]->alive) particleList[i] = nullptr;
 		}
 	}
 
 	void render(olc::PixelGameEngine* game)
 	{
-		for (Particle* p : particles)
+		for( int i = 0; i < _MAX_PARTICLE_COUNT; i++)
 		{
-			p->render(game);
+			if (particleList[i] == nullptr) continue;
+			particleList[i]->render(game);
 		}
 	}
 
 private:
-	std::vector<Particle*> particles;
+	Particle* particleList[_MAX_PARTICLE_COUNT] = { nullptr };
 };
 
 #endif

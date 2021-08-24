@@ -28,6 +28,9 @@ public:
     // allow this vehicle to use multiple weapons
     int currentProjectile = 0;
 
+    // world size distance between centre of player and edge for a bounding box
+    float collisionSize;
+
     // extracted to a function so we can recalculated some cached values
     void setAngle(float newA)
     {
@@ -40,11 +43,11 @@ public:
     {
         if (game->GetKey(olc::W).bHeld)
         {
-            move(fElapsedTime, 1, game, map);
+            move(fElapsedTime, 1, map);
         }
         if (game->GetKey(olc::S).bHeld)
         {
-            move(fElapsedTime, -1, game, map);
+            move(fElapsedTime, -1, map);
         }
         if (game->GetKey(olc::A).bHeld)
         {
@@ -63,6 +66,62 @@ private:
     float sinA = 0.0f;
     float cosA = 0.0f;
 
+    void checkCollision(TileMap* map, float& diffX, float& diffY)
+    {
+        float newX = x + diffX;
+        float newY = y + diffY;
+
+        // check for see if an obstacle exists in the tile we'd be in if we applied the x/yDiff
+
+        int newX_tile, newY_tile;
+
+        // check edges, not corners
+
+        if (newX < x)
+        {
+            // we're moving west
+            newX_tile = (int)((newX - collisionSize) / map->f_tileSize);
+            newY_tile = (int)(newY / map->f_tileSize);
+            if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
+            {
+                diffX = 0;
+            }
+
+        }
+        else if (newX > x)
+        {
+            // we're moving east
+            newX_tile = (int)((newX + collisionSize) / map->f_tileSize);
+            newY_tile = (int)(newY / map->f_tileSize);
+            if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
+            {
+                diffX = 0;
+            }
+        }
+
+        if (newY < y)
+        {
+            // we're moving north
+            newX_tile = (int)(newX / map->f_tileSize);
+            newY_tile = (int)((newY + collisionSize) / map->f_tileSize);
+            if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
+            {
+                diffY = 0;
+            }
+
+        }
+        else if (newY > y)
+        {
+            // we're moving east
+            newX_tile = (int)(newX / map->f_tileSize);
+            newY_tile = (int)((newY - collisionSize) / map->f_tileSize);
+            if (map->getObstacleTile(newX_tile, newY_tile) != L' ')
+            {
+                diffY = 0;
+            }
+        }
+
+    }
     void rotate(float fElapsedTime, int direction)
     {
         // if direction > 0, we turn clockwise
@@ -113,7 +172,7 @@ private:
             if (yD < 0) d += M_PI;
         }
     }
-    void move(float fElapsedTime, int direction, olc::PixelGameEngine* game, TileMap* map)
+    void move(float fElapsedTime, int direction, TileMap* map)
     {
         // if direction > 0, we move forwards
         if (direction > 0)
@@ -136,7 +195,7 @@ private:
 
 
             // diffX and diffY are passed by reference so will be updated if needed
-            //game->checkCollision(diffX, diffY);
+            checkCollision(map, diffX, diffY);
 
             // we're allowed to move
             x += diffX;
@@ -164,7 +223,7 @@ private:
             }
 
             // diffX and diffY are passed by reference so will be updated if needed
-            //game->checkCollision(diffX, diffY);
+            checkCollision(map, diffX, diffY);
 
             // we're allowed to move
             x -= diffX;
