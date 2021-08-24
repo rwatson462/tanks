@@ -12,6 +12,7 @@ public:
 	float x = 0.0f;
 	float y = 0.0f;
 	float life = 0.0f;
+	float lifeTimeMax = 0.0f;
 	olc::Pixel colour;
 	bool alive = true;
 	float a = 0.0f;
@@ -21,7 +22,7 @@ public:
 		this->x = (float)x;
 		this->y = (float)y;
 	    this->a = angle;
-		this->life = life;
+		this->life = this->lifeTimeMax = life;
 		this->colour = colour;
 	}
 
@@ -31,11 +32,14 @@ public:
 		if (this->life <= 0)
 		{
 			this->alive = false;
+			return;
 		}
 
 		// move the particle
 		x += sin(a);
 		y += cos(a);
+
+		colour.a = life / lifeTimeMax * 255;
 	}
 
 	void render(olc::PixelGameEngine* game)
@@ -53,16 +57,13 @@ class ParticleEmitter
 {
 public:
 
-	void create(int x, int y, float max_life = 1.0f, olc::Pixel colour = olc::WHITE)
+	void create(int x, int y, int count = 1, float max_life = 1.0f, olc::Pixel colour = olc::WHITE)
 	{
 	    float life, angle;
-	    for( int i = -1; i < 2; i++ ) {
-            for (int j = -1; j < 2; j++) {
-                life = (float) (rand() / (RAND_MAX / max_life));
-                angle = (float) (rand() / (RAND_MAX / (M_PI * 2)));
-
-                particles.push_back(new Particle(x +i, y +j, life, angle, colour));
-            }
+	    for( int i = 0; i <= count; i++ ) {
+            life = (float) (rand() / (RAND_MAX / max_life));
+            angle = (float) (rand() / (RAND_MAX / (M_PI * 2)));
+            particles.push_back(new Particle(x, y, life, angle, colour));
         }
 	}
 

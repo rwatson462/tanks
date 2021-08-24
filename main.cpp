@@ -270,10 +270,19 @@ private:
             wchar_t obs = map->getObstacleTile(projX, projY);
             if (obs == L'o')
             {
-                // we're colliding with a solid wall, mark ourselves as no longer slive
+                // we're colliding with a solid wall, mark ourselves as no longer alive
                 projectile->isAlive = false;
                 // and create a fancy explosion animation with particles
-                particleEmitter->create(projectile->x, projectile->y);
+                switch( player->currentProjectile)
+                {
+                    case PROJECTILE_BULLET:
+                        particleEmitter->create(projectile->x, projectile->y, rand()%5, 0.5f, olc::YELLOW);
+                        break;
+                    case PROJECTILE_BULLET_AP:
+                        particleEmitter->create(projectile->x, projectile->y, rand()%15, 0.5f, olc::RED);
+                        break;
+                }
+
             }
             else if (obs == L'x')
             {
