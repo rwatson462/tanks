@@ -377,16 +377,16 @@ private:
             "{ " + std::to_string((int)(player->x / map->f_tileSize)) + " / " + std::to_string((int)(player->y / map->f_tileSize)) + " }"
         );
 
+        // draw currently equipped weapon name
         float top = ScreenHeight() - map->f_halfTileSize * 1.5;
         float left = map->f_halfTileSize / 2;
-
         switch(player->currentProjectile)
         {
             case PROJECTILE_BULLET:
                 FillRectDecal(
                     { left - 1, top - 1 }, 
                     { 6 * map->f_halfTileSize+2, map->f_halfTileSize+2 },
-                    olc::Pixel(0, 0, 0, 96)
+                    olc::Pixel(0, 0, 0, 128)
                 );
                 DrawStringDecal(
                     { left, top },
@@ -397,7 +397,7 @@ private:
                 FillRectDecal(
                     { left - 1, top - 1 }, 
                     { 22 * map->f_halfTileSize + 2, map->f_halfTileSize + 2 },
-                    olc::Pixel(0, 0, 0, 96)
+                    olc::Pixel(0, 0, 0, 128)
                 );
                 DrawStringDecal(
                     { left, top },
@@ -419,7 +419,7 @@ private:
                 FillRectDecal(
                     { left - 1, top - 1 },
                     { 7 * map->f_halfTileSize + 2, map->f_halfTileSize + 2 },
-                    olc::Pixel(0, 0, 0, 96)
+                    olc::Pixel(0, 0, 0, 128)
                 );
                 DrawStringDecal(
                         { left, top },
