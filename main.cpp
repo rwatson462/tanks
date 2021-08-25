@@ -145,6 +145,12 @@ private:
                 player->currentProjectile = PROJECTILE_BULLET_AP;
                 break;
             case PROJECTILE_BULLET_AP:
+                player->currentProjectile = PROJECTILE_BULLET_SPREAD;
+                break;
+            case PROJECTILE_BULLET_SPREAD:
+                player->currentProjectile = PROJECTILE_BULLET;
+                // no other weapons currently enabled
+                break;
                 player->currentProjectile = PROJECTILE_MISSILE;
                 break;
             case PROJECTILE_MISSILE:
@@ -170,19 +176,32 @@ private:
             // TODO create struct of all projectiles with their stats so we don't need to refer to all of them in here
             Projectile* b;
 
+            float a1, a2;
+
             switch(player->currentProjectile)
             {
                 case PROJECTILE_BULLET:
-                    b = new Projectile(PROJECTILE_BULLET, startX, startY, player->d, 200.0f, 0.2f);
+                    projectiles.push_back(new Projectile(PROJECTILE_BULLET, startX, startY, player->d, 200.0f, 0.2f));
                     break;
                 case PROJECTILE_BULLET_AP:
-                    b = new Projectile(PROJECTILE_BULLET_AP, startX, startY, player->d, 150.0f, 2.0f);
+                    projectiles.push_back(new Projectile(PROJECTILE_BULLET_AP, startX, startY, player->d, 150.0f, 2.0f));
+                    break;
+                case PROJECTILE_BULLET_SPREAD:
+                    a1 = player->d - M_PI / 12;
+                    a2 = player->d + M_PI / 12;
+                    if (a1 < 0) a1 += M_PI * 2;
+                    if (a2 > M_PI * 2) a2 -= M_PI * 2;
+                    projectiles.push_back(new Projectile(PROJECTILE_BULLET, startX, startY, a1, 200.0f, 0.2f));
+                    projectiles.push_back(new Projectile(PROJECTILE_BULLET, startX, startY, player->d, 200.0f, 0.2f));
+                    projectiles.push_back(new Projectile(PROJECTILE_BULLET, startX, startY, a2, 200.0f, 0.2f));
                     break;
                 case PROJECTILE_MISSILE:
-                    b = new Projectile(PROJECTILE_MISSILE, startX, startY, player->d, 50.0f, 10.0f);
+                    break;
+                    projectiles.push_back(new Projectile(PROJECTILE_MISSILE, startX, startY, player->d, 50.0f, 10.0f));
                     break;
                 case PROJECTILE_LANDMINE:
-                    b = new Projectile(PROJECTILE_LANDMINE, player->x, player->y, player->d, 0.0f, 10.0f);
+                    break;
+                    projectiles.push_back(new Projectile(PROJECTILE_LANDMINE, player->x, player->y, player->d, 0.0f, 10.0f));
                     break;
             }
 
@@ -418,6 +437,17 @@ private:
                 DrawStringDecal(
                     { left, top },
                         "Armour-piercing Bullet"
+                );
+                break;
+            case PROJECTILE_BULLET_SPREAD:
+                FillRectDecal(
+                    { left - 1, top - 1 },
+                    { 13 * map->f_halfTileSize + 2, map->f_halfTileSize + 2 },
+                    olc::Pixel(0, 0, 0, 128)
+                );
+                DrawStringDecal(
+                    { left, top },
+                    "Spread Bullet"
                 );
                 break;
             case PROJECTILE_MISSILE:

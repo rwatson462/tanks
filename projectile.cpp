@@ -2,8 +2,9 @@
 
 constexpr int PROJECTILE_BULLET = 1;
 constexpr int PROJECTILE_BULLET_AP = 2;
-constexpr int PROJECTILE_MISSILE = 3;
-constexpr int PROJECTILE_LANDMINE = 4;
+constexpr int PROJECTILE_BULLET_SPREAD = 3;
+constexpr int PROJECTILE_MISSILE = 4;
+constexpr int PROJECTILE_LANDMINE = 5;
 
 class Projectile
 {
