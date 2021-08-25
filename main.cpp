@@ -21,7 +21,6 @@ private:
     bool isRunning = true;
     bool isPaused = false;
 
-    float f_tankBoundingSize;
     olc::Sprite *grassSprite;
     olc::Sprite *dirtSprite;
     olc::Decal *grassDecal;
