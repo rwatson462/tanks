@@ -165,9 +165,10 @@ private:
     void shoot()
     {
         // left mouse = bullet
-        if (GetMouse( 0 ).bPressed || GetKey(olc::SPACE).bPressed)
+        if (GetMouse( 0 ).bHeld || GetKey(olc::SPACE).bHeld)
         {
             // attempt to fire whatever the current projectile is
+            if (!player->canShoot()) return;
 
             // adjust start position of bullet so it appears to come from the end of the turret
             float startX = player->x + 8.0f * sin(player->d);
@@ -205,7 +206,7 @@ private:
                     break;
             }
 
-            projectiles.push_back( b );
+            player->reloadTime = player->maxReloadTime;
         }
     }
 
@@ -472,6 +473,25 @@ private:
                         "Landmine"
                 );
                 break;
+        }
+
+        // draw progress bar for reloading
+        FillRectDecal(
+            { 4, map->f_tileSize + 4 },
+            { map->f_tileSize - 8, map->mapHeight * map->f_tileSize - map->f_tileSize*2 - 8 },
+            olc::Pixel(0, 0, 0, 128)
+        );
+        if (!player->canShoot())
+        {
+            // draw progress
+            float top = map->f_tileSize + 6;
+            float size = (map->mapHeight * map->f_tileSize - map->f_tileSize * 2 - 12) - (player->reloadTime / player->maxReloadTime) * (map->mapHeight * map->f_tileSize - map->f_tileSize * 2 - 12);
+            float height = (map->mapHeight * map->f_tileSize - map->f_tileSize * 2 - 12) - size;
+            FillRectDecal(
+                { 6, top+size },
+                { map->f_tileSize - 12, height },
+                olc::Pixel(255, 0, 0, 192)
+            );
         }
 
         if( isPaused )

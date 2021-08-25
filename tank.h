@@ -31,6 +31,16 @@ public:
     // world size distance between centre of player and edge for a bounding box
     float collisionSize;
 
+    // the player must wait for this long until they can fire again
+    float maxReloadTime = 2.0f;
+    // a counter used to tell us if we can fire again
+    float reloadTime = 0.0f;
+
+    bool canShoot()
+    {
+        return reloadTime == 0.0f;
+    }
+
     // extracted to a function so we can recalculated some cached values
     void setAngle(float newA)
     {
@@ -59,6 +69,9 @@ public:
         }
 
         rotateTurret(fElapsedTime, game);
+
+        if (reloadTime >= 0.0f) reloadTime -= fElapsedTime;
+        if (reloadTime <= 0.0f) reloadTime = 0.0f;
     }
 
 private:
@@ -112,7 +125,7 @@ private:
         }
         else if (newY > y)
         {
-            // we're moving east
+            // we're moving south
             newX_tile = (int)(newX / map->f_tileSize);
             newY_tile = (int)((newY - collisionSize) / map->f_tileSize);
             if (map->getObstacleTile(newX_tile, newY_tile) != L' ')

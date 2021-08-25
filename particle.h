@@ -3,6 +3,8 @@
 #ifndef RW_PARTICLE_H
 #define RW_PARTICLE_H
 
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include "olcPixelGameEngine/olcPixelGameEngine.h"
 
 
