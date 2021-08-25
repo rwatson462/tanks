@@ -52,7 +52,7 @@ void TileMap::loadMapObstacles(std::string mapName)
     this->obsMap += L"o    o x  x  x     o";
     this->obsMap += L"o    x    o        o";
     this->obsMap += L"o    x          x  o";
-    this->obsMap += L"o   oxxxxxxxxo     o";
+    this->obsMap += L"oxxxxxxxxxxxxxxxxx o";
     this->obsMap += L"o        x         o";
     this->obsMap += L"o      o     x     o";
     this->obsMap += L"o                  o";
@@ -61,7 +61,7 @@ void TileMap::loadMapObstacles(std::string mapName)
     this->obsMap += L"o oooo oooooo oooo o";
     this->obsMap += L"o                  o";
     this->obsMap += L"o                  o";
-    this->obsMap += L"oooooooooooooooooooo";
+    this->obsMap += L"oooooo        oooooo";
 }
 
 
