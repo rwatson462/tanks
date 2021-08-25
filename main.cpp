@@ -212,60 +212,23 @@ private:
 
     void updateProjectiles(float fElapsedTime)
     {
+        bool collided;
+
         // move each bullet
         for (auto &projectile : projectiles)
         {
-            projectile->update(fElapsedTime);
+            projectile->update(fElapsedTime, map, particleEmitter, collided);
 
-            // check if projectile is off screen
-            if (
-                    projectile->x < 0 || projectile->x >= map->mapWidth * map->f_tileSize
-                    ||
-                    projectile->y < 0 || projectile->y > map->mapHeight * map->f_tileSize
-                )
-            {
-                projectile->isAlive = false;
-                continue;
-            }
-
-            // check collisions with obstacles and other tanks
+            if (!collided) continue;
 
             // convert projectile's x/y to map coords
             int projX = floor(projectile->x / map->f_tileSize);
             int projY = floor(projectile->y / map->f_tileSize);
 
-            wchar_t obs = map->getObstacleTile(projX, projY);
-            if (obs == L'o')
-            {
-                // we're colliding with a solid wall, mark ourselves as no longer alive
-                projectile->isAlive = false;
-                // and create a fancy explosion animation with particles
-                switch( player->currentProjectile)
-                {
-                    case PROJECTILE_BULLET:
-                        particleEmitter->create(projectile->x, projectile->y, rand()%5, 1, 0.5f, olc::YELLOW);
-                        break;
-                    case PROJECTILE_BULLET_AP:
-                        particleEmitter->create(projectile->x, projectile->y, rand()%15, 2, 0.5f, olc::RED);
-                        break;
-                }
-
-            }
-            else if (obs == L'x')
+            if (map->getObstacleTile(projX, projY) == L'x')
             {
                 // we're colliding with a destructable wall, destruct it
-                projectile->isAlive = false;
                 map->alterObstacleTile(projX, projY, L' ');
-
-                switch (player->currentProjectile)
-                {
-                case PROJECTILE_BULLET:
-                    particleEmitter->create(projectile->x, projectile->y, rand() % 5, 1, 0.5f, olc::YELLOW);
-                    break;
-                case PROJECTILE_BULLET_AP:
-                    particleEmitter->create(projectile->x, projectile->y, rand() % 15, 2, 0.5f, olc::RED);
-                    break;
-                }
 
                 // create some particles to show the block being destroyed
                 float worldX = projX * map->f_tileSize;
@@ -301,7 +264,7 @@ private:
             // then the first not-alive projectile is removed which means all other not-alive projectiles are also
             // deleted
             auto idx = remove_if(projectiles.begin(), projectiles.end(), [&](Projectile *p) {
-                return !p->isAlive;
+                return !p->alive;
             });
             if (idx != projectiles.end())
             {
@@ -388,18 +351,19 @@ private:
 
     }
 
-    void renderBullets()
+    void renderProjectiles()
     {
         for (auto& p : projectiles)
         {
-            switch( p->type)
+            // Note: PROJECTILE_BULLET_SPREAD doesn't need to be dealt with here as it just creates multiple BULLET objects
+            switch (p->type)
             {
-                case PROJECTILE_BULLET:
-                    DrawDecal({ p->x - bulletDrawOffset, p->y - bulletDrawOffset }, bulletDecal);
-                    break;
-                case PROJECTILE_BULLET_AP:
-                    DrawDecal({ p->x - bulletDrawOffset, p->y - bulletDrawOffset }, bulletDecal, { 1.0f, 1.0f }, olc::RED);
-                    break;
+            case PROJECTILE_BULLET:
+                DrawDecal({ p->x - bulletDrawOffset, p->y - bulletDrawOffset }, bulletDecal);
+                break;
+            case PROJECTILE_BULLET_AP:
+                DrawDecal({ p->x - bulletDrawOffset, p->y - bulletDrawOffset }, bulletDecal, { 1.0f, 1.0f }, olc::RED);
+                break;
                 //TODO add missile and landmine
             }
         }
@@ -507,7 +471,7 @@ private:
     {
         renderMap();
         renderPlayer();
-        renderBullets();
+        renderProjectiles();
         particleEmitter->render(this);
         renderUI();
     }
