@@ -158,11 +158,11 @@ private:
             switch(player->currentProjectile)
             {
                 case PROJECTILE_BULLET:
-                    projectiles.push_back(new Projectile(PROJECTILE_BULLET, startX, startY, player->d, 200.0f, 0.2f));
+                    projectiles.push_back(new TankShell(startX, startY, player->d));
                     player->maxReloadTime = RELOAD_BULLET;
                     break;
                 case PROJECTILE_BULLET_AP:
-                    projectiles.push_back(new Projectile(PROJECTILE_BULLET_AP, startX, startY, player->d, 150.0f, 2.0f));
+                    projectiles.push_back(new TankShellAP(startX, startY, player->d));
                     player->maxReloadTime = RELOAD_BULLET_AP;
                     break;
                 case PROJECTILE_BULLET_SPREAD:
@@ -170,19 +170,19 @@ private:
                     a2 = player->d + M_PI / 12;
                     if (a1 < 0) a1 += M_PI * 2;
                     if (a2 > M_PI * 2) a2 -= M_PI * 2;
-                    projectiles.push_back(new Projectile(PROJECTILE_BULLET, startX, startY, a1, 200.0f, 0.2f));
-                    projectiles.push_back(new Projectile(PROJECTILE_BULLET, startX, startY, player->d, 200.0f, 0.2f));
-                    projectiles.push_back(new Projectile(PROJECTILE_BULLET, startX, startY, a2, 200.0f, 0.2f));
+                    projectiles.push_back(new TankShell(startX, startY, a1));
+                    projectiles.push_back(new TankShell(startX, startY, player->d));
+                    projectiles.push_back(new TankShell(startX, startY, a2));
                     player->maxReloadTime = RELOAD_BULLET_SPREAD;
                     break;
                 case PROJECTILE_MISSILE:
                     break;
-                    projectiles.push_back(new Projectile(PROJECTILE_MISSILE, startX, startY, player->d, 50.0f, 10.0f));
+//                    projectiles.push_back(new Projectile(PROJECTILE_MISSILE, startX, startY, player->d, 50.0f, 10.0f));
                     player->maxReloadTime = RELOAD_MISSILE;
                     break;
                 case PROJECTILE_LANDMINE:
                     break;
-                    projectiles.push_back(new Projectile(PROJECTILE_LANDMINE, player->x, player->y, player->d, 0.0f, 10.0f));
+//                    projectiles.push_back(new Projectile(PROJECTILE_LANDMINE, player->x, player->y, player->d, 0.0f, 10.0f));
                     player->maxReloadTime = RELOAD_LANDMINE;
                     break;
             }
@@ -203,8 +203,8 @@ private:
             if (!collided) continue;
 
             // convert projectile's x/y to map coords
-            int projX = floor(projectile->x / map->f_tileSize);
-            int projY = floor(projectile->y / map->f_tileSize);
+            int projX = floor(projectile->m_x / map->f_tileSize);
+            int projY = floor(projectile->m_y / map->f_tileSize);
 
             if (map->getObstacleTile(projX, projY) == L'x')
             {
@@ -347,7 +347,6 @@ private:
         if (!player->canShoot())
         {
             // draw progress
-            float top = map->f_tileSize + 6;
             float size = (map->mapHeight * map->f_tileSize - map->f_tileSize * 2 - 12) - (player->reloadTime / player->maxReloadTime) * (map->mapHeight * map->f_tileSize - map->f_tileSize * 2 - 12);
             float height = (map->mapHeight * map->f_tileSize - map->f_tileSize * 2 - 12) - size;
             FillRectDecal(
@@ -380,7 +379,7 @@ private:
 int main()
 {
     TanksGame game;
-    if( game.Construct(320, 240, 8, 8, false ) )
+    if( game.Construct(320, 240, 2, 2, false ) )
     {
         game.Start();
     }

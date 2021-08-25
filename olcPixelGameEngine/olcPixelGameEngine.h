@@ -2815,7 +2815,7 @@ namespace olc
 	{ return true; }
 	
 	void PixelGameEngine::olc_UpdateViewport()
-	{
+    {
 		int32_t ww = vScreenSize.x * vPixelSize.x;
 		int32_t wh = vScreenSize.y * vPixelSize.y;
 		float wasp = (float)ww / (float)wh;
@@ -4874,7 +4874,6 @@ namespace olc {
 			bool resultAddMethod = class_addMethod(GLUTViewClass, scrollWheelSel, (IMP)scrollWheelUpdate, "v@:@");
 			assert(resultAddMethod);
 #endif
-
 			renderer->PrepareDevice();
 
 			if (bFullScreen)
