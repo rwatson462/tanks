@@ -3,6 +3,7 @@
 #include "olcPixelGameEngine/olcPixelGameEngine.h"
 #include "map.h"
 #include "tank.h"
+#include "sprite.h"
 #include "particle.h"
 #include "projectile.cpp"
 #include <cmath>
@@ -21,26 +22,8 @@ private:
     bool isRunning = true;
     bool isPaused = false;
 
-    olc::Sprite *grassSprite;
-    olc::Sprite *dirtSprite;
-    olc::Decal *grassDecal;
-    olc::Decal *dirtDecal;
+    SpriteManager* spriteManager;
 
-    olc::Sprite* destructableWallSprite;
-    olc::Decal* destructableWallDecal;
-    olc::Sprite* solidWallSprite;
-    olc::Decal* solidWallDecal;
-
-    olc::Sprite *tankChassisSprite;
-    olc::Sprite *tankTurretSprite;
-    olc::Decal *tankChassisDecal;
-    olc::Decal *tankTurretDecal;
-    olc::Sprite* tankTrackSprite;
-    olc::Decal* tankTrackDecal;
-
-    olc::Sprite *bulletSprite;
-    olc::Decal* bulletDecal;
-    float bulletDrawOffset;
     std::vector<Projectile*> projectiles;
 
     Tank* player;
@@ -54,6 +37,8 @@ private:
 
     bool OnUserCreate() override
     {
+        spriteManager = new SpriteManager(this);
+
         map = new TileMap();
         map->load("start");
         map->f_tileSize = (float)ScreenHeight() / (float)map->mapHeight;
@@ -61,26 +46,20 @@ private:
 
         particleEmitter = new ParticleEmitter();
 
-        grassSprite = new olc::Sprite("./assets/grasstop.png");
-        dirtSprite = new olc::Sprite("./assets/dirt.png");
-        grassDecal = new olc::Decal( grassSprite );
-        dirtDecal = new olc::Decal( dirtSprite );
+        spriteManager->load("grassTile", "./assets/grasstop.png");
+        spriteManager->load("dirtTile", "./assets/dirt.png");
+        spriteManager->load("tankChassis", "./assets/tank-chassis.png");
+        spriteManager->load("tankTurret", "./assets/tank-turret.png");
+        spriteManager->load("tankTrack", "./assets/tank-tracks.png");
+        spriteManager->load("destructableWallTile", "./assets/destructable-wall.png");
+        spriteManager->load("solidWallTile", "./assets/solid-wall.png");
+        spriteManager->load("bullet", "./assets/bullet.png");
 
-        tankChassisSprite = new olc::Sprite( "./assets/tank-chassis.png" );
-        tankTurretSprite = new olc::Sprite( "./assets/tank-turret.png" );
-        tankChassisDecal = new olc::Decal( tankChassisSprite );
-        tankTurretDecal = new olc::Decal(tankTurretSprite);
-        tankTrackSprite = new olc::Sprite("./assets/tank-tracks.png");
-        tankTrackDecal = new olc::Decal(tankTrackSprite);
-
-        destructableWallSprite = new olc::Sprite("./assets/destructable-wall.png");
-        destructableWallDecal = new olc::Decal(destructableWallSprite);
-        solidWallSprite = new olc::Sprite("./assets/solid-wall.png");
-        solidWallDecal = new olc::Decal(solidWallSprite);
-
-        bulletSprite = new olc::Sprite("./assets/bullet.png");
-        bulletDecal = new olc::Decal(bulletSprite);
-        bulletDrawOffset = bulletSprite->width / 2.0f;
+        // setup offsets for how we draw these objects
+        spriteManager->get("tankChassis")->setOffset(map->f_halfTileSize);
+        spriteManager->get("tankTurret")->setOffset(map->f_halfTileSize);
+        spriteManager->get("tankTrack")->setOffset(map->f_halfTileSize);
+        spriteManager->get("bullet")->setOffset(spriteManager->get("bullet")->getSprite()->width / 2.0f);
 
         player = new Tank();
         player->x = map->mapWidth * map->f_tileSize / 2.0f;
@@ -284,17 +263,11 @@ private:
                 wchar_t tileId = map->getMapTile(x,y);
                 if (tileId == L'.')
                 {
-                    DrawDecal(
-                        { x * map->f_tileSize, y * map->f_tileSize },
-                        grassDecal
-                    );
+                    spriteManager->render("grassTile", { x * map->f_tileSize, y * map->f_tileSize });
                 }
                 else if (tileId == L'#')
                 {
-                    DrawDecal(
-                        { x * map->f_tileSize, y * map->f_tileSize },
-                        dirtDecal
-                    );
+                    spriteManager->render("dirtTile", { x * map->f_tileSize,y * map->f_tileSize });
                 }
             }
         }
@@ -307,11 +280,11 @@ private:
                 wchar_t obsId = map->getObstacleTile(x,y);
                 if (obsId == L'x')
                 {
-                    DrawDecal({ x * map->f_tileSize, y * map->f_tileSize }, destructableWallDecal);
+                    spriteManager->render("destructableWallTile", { x * map->f_tileSize, y * map->f_tileSize });
                 }
                 else if (obsId == L'o')
                 {
-                    DrawDecal({ x * map->f_tileSize, y * map->f_tileSize }, solidWallDecal);
+                    spriteManager->render("solidWallTile", { x * map->f_tileSize, y * map->f_tileSize });
                 }
             }
         }
@@ -330,21 +303,19 @@ private:
         }
 
         // draw the tank chassis
-        DrawRotatedDecal(
+        spriteManager->render(
+            "tankChassis",
             { player->x, player->y },
-            tankChassisDecal,
             player->a,
-            {map->f_halfTileSize, map->f_halfTileSize },
-            {1.0f, 1.0f},
+            { 1.0f, 1.0f },
             player->tint
         );
 
         // draw the turret
-        DrawRotatedDecal(
+        spriteManager->render(
+            "tankTurret",
             { player->x, player->y },
-            tankTurretDecal,
             player->d,
-            {map->f_halfTileSize, map->f_halfTileSize },
             { 1.0f, 1.0f },
             player->tint
         );
@@ -359,10 +330,10 @@ private:
             switch (p->type)
             {
             case PROJECTILE_BULLET:
-                DrawDecal({ p->x - bulletDrawOffset, p->y - bulletDrawOffset }, bulletDecal);
+                spriteManager->render("bullet", { p->x, p->y });
                 break;
             case PROJECTILE_BULLET_AP:
-                DrawDecal({ p->x - bulletDrawOffset, p->y - bulletDrawOffset }, bulletDecal, { 1.0f, 1.0f }, olc::RED);
+                spriteManager->render("bullet", { p->x, p->y }, 0.0f, { 1.0f, 1.0f }, olc::RED);
                 break;
                 //TODO add missile and landmine
             }

@@ -25,7 +25,6 @@ wchar_t TileMap::getObstacleTile(int tileX, int tileY)
 void TileMap::loadMap(std::string mapName)
 {
     // small map
-    //this->map =  L"####################";
     this->map =  L"....................";
     this->map += L"....................";
     this->map += L"....................";
@@ -38,10 +37,9 @@ void TileMap::loadMap(std::string mapName)
     this->map += L"....................";
     this->map += L"....................";
     this->map += L"....................";
-    this->map += L"....................";
-    this->map += L"....................";
-    this->map += L"....................";
-    //this->map += L"####################";
+    this->map += L"####################";
+    this->map += L"####################";
+    this->map += L"####################";
 }
 
 void TileMap::loadMapObstacles(std::string mapName)
