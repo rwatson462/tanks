@@ -340,6 +340,22 @@ private:
         }
     }
 
+    void renderCurrentWeaponName(std::string weaponName)
+    {
+        float top = ScreenHeight() - map->f_halfTileSize * 1.5;
+        float left = map->f_halfTileSize / 2;
+
+        FillRectDecal(
+            { left - 1, top - 1 },
+            { weaponName.length() * map->f_halfTileSize + 2, map->f_halfTileSize + 2 },
+            olc::Pixel(0, 0, 0, 128)
+        );
+        DrawStringDecal(
+            { left, top },
+            weaponName
+        );
+    }
+
     void renderUI()
     {
         // draw player location
@@ -354,59 +370,19 @@ private:
         switch(player->currentProjectile)
         {
             case PROJECTILE_BULLET:
-                FillRectDecal(
-                    { left - 1, top - 1 }, 
-                    { 6 * map->f_halfTileSize+2, map->f_halfTileSize+2 },
-                    olc::Pixel(0, 0, 0, 128)
-                );
-                DrawStringDecal(
-                    { left, top },
-                        "Bullet"
-                        );
+                renderCurrentWeaponName("Bullet");
                 break;
             case PROJECTILE_BULLET_AP:
-                FillRectDecal(
-                    { left - 1, top - 1 }, 
-                    { 22 * map->f_halfTileSize + 2, map->f_halfTileSize + 2 },
-                    olc::Pixel(0, 0, 0, 128)
-                );
-                DrawStringDecal(
-                    { left, top },
-                        "Armour-piercing Bullet"
-                );
+                renderCurrentWeaponName("Armour-piercing Bullet");
                 break;
             case PROJECTILE_BULLET_SPREAD:
-                FillRectDecal(
-                    { left - 1, top - 1 },
-                    { 13 * map->f_halfTileSize + 2, map->f_halfTileSize + 2 },
-                    olc::Pixel(0, 0, 0, 128)
-                );
-                DrawStringDecal(
-                    { left, top },
-                    "Spread Bullet"
-                );
+                renderCurrentWeaponName("Spread Bullet");
                 break;
             case PROJECTILE_MISSILE:
-                FillRectDecal(
-                    { left - 1, top - 1 },
-                    { 7 * map->f_halfTileSize + 2, map->f_halfTileSize + 2 },
-                    olc::Pixel(0, 0, 0, 128)
-                );
-                DrawStringDecal(
-                        { left, top },
-                        "Missile"
-                );
+                renderCurrentWeaponName("Missile");
                 break;
             case PROJECTILE_LANDMINE:
-                FillRectDecal(
-                    { left - 1, top - 1 },
-                    { 8 * map->f_halfTileSize + 2, map->f_halfTileSize + 2 },
-                    olc::Pixel(0, 0, 0, 96)
-                );
-                DrawStringDecal(
-                        { left, top },
-                        "Landmine"
-                );
+                renderCurrentWeaponName("Landmine");
                 break;
         }
 
