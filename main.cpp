@@ -59,6 +59,8 @@ private:
         map->f_tileSize = (float)ScreenHeight() / (float)map->mapHeight;
         map->f_halfTileSize = map->f_tileSize / 2.0f;
 
+        particleEmitter = new ParticleEmitter();
+
         grassSprite = new olc::Sprite("./assets/grasstop.png");
         dirtSprite = new olc::Sprite("./assets/dirt.png");
         grassDecal = new olc::Decal( grassSprite );
@@ -79,8 +81,6 @@ private:
         bulletSprite = new olc::Sprite("./assets/bullet.png");
         bulletDecal = new olc::Decal(bulletSprite);
         bulletDrawOffset = bulletSprite->width / 2.0f;
-
-        particleEmitter = new ParticleEmitter();
 
         player = new Tank();
         player->x = map->mapWidth * map->f_tileSize / 2.0f;
