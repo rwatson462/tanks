@@ -9,6 +9,12 @@ constexpr int PROJECTILE_BULLET_SPREAD = 3;
 constexpr int PROJECTILE_MISSILE = 4;
 constexpr int PROJECTILE_LANDMINE = 5;
 
+constexpr float RELOAD_BULLET = 0.2f;
+constexpr float RELOAD_BULLET_AP = 0.5f;
+constexpr float RELOAD_BULLET_SPREAD = 0.75f;
+constexpr float RELOAD_MISSILE = 1.0f;
+constexpr float RELOAD_LANDMINE = 2.0f;
+
 class Projectile
 {
 public:

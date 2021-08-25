@@ -162,9 +162,11 @@ private:
             {
                 case PROJECTILE_BULLET:
                     projectiles.push_back(new Projectile(PROJECTILE_BULLET, startX, startY, player->d, 200.0f, 0.2f));
+                    player->maxReloadTime = RELOAD_BULLET;
                     break;
                 case PROJECTILE_BULLET_AP:
                     projectiles.push_back(new Projectile(PROJECTILE_BULLET_AP, startX, startY, player->d, 150.0f, 2.0f));
+                    player->maxReloadTime = RELOAD_BULLET_AP;
                     break;
                 case PROJECTILE_BULLET_SPREAD:
                     a1 = player->d - M_PI / 12;
@@ -174,14 +176,17 @@ private:
                     projectiles.push_back(new Projectile(PROJECTILE_BULLET, startX, startY, a1, 200.0f, 0.2f));
                     projectiles.push_back(new Projectile(PROJECTILE_BULLET, startX, startY, player->d, 200.0f, 0.2f));
                     projectiles.push_back(new Projectile(PROJECTILE_BULLET, startX, startY, a2, 200.0f, 0.2f));
+                    player->maxReloadTime = RELOAD_BULLET_SPREAD;
                     break;
                 case PROJECTILE_MISSILE:
                     break;
                     projectiles.push_back(new Projectile(PROJECTILE_MISSILE, startX, startY, player->d, 50.0f, 10.0f));
+                    player->maxReloadTime = RELOAD_MISSILE;
                     break;
                 case PROJECTILE_LANDMINE:
                     break;
                     projectiles.push_back(new Projectile(PROJECTILE_LANDMINE, player->x, player->y, player->d, 0.0f, 10.0f));
+                    player->maxReloadTime = RELOAD_LANDMINE;
                     break;
             }
 
