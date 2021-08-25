@@ -27,9 +27,6 @@ private:
     std::vector<Projectile*> projectiles;
 
     Tank* player;
-    float playerA = 0.0f;
-
-    std::vector<olc::vi2d> tilesOfInterest;
     std::vector<olc::vi2d> tracks;
 
     TileMap* map;
@@ -295,46 +292,6 @@ private:
         }
     }
 
-    void renderPlayer()
-    {
-
-        for (olc::vi2d tile: tilesOfInterest)
-        {
-            FillRectDecal(
-                tile * map->f_tileSize,
-                { map->f_tileSize, map->f_tileSize },
-                olc::Pixel(255, 0, 0, 64)
-            );
-        }
-
-        // draw the tank chassis
-        spriteManager->render(
-            "tankChassis",
-            { player->x, player->y },
-            player->a,
-            { 1.0f, 1.0f },
-            player->tint
-        );
-
-        // draw the turret
-        spriteManager->render(
-            "tankTurret",
-            { player->x, player->y },
-            player->d,
-            { 1.0f, 1.0f },
-            player->tint
-        );
-
-    }
-
-    void renderProjectiles()
-    {
-        for (auto& p : projectiles)
-        {
-            p->render(spriteManager);
-        }
-    }
-
     void renderCurrentWeaponName(std::string weaponName)
     {
         float top = ScreenHeight() - map->f_halfTileSize * 1.5;
@@ -412,8 +369,8 @@ private:
     void Render( float fElapsedTime )
     {
         renderMap();
-        renderPlayer();
-        renderProjectiles();
+        player->render(spriteManager);
+        for (Projectile* p : projectiles) p->render(spriteManager);
         particleEmitter->render(this);
         renderUI();
     }

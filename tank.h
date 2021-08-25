@@ -3,6 +3,8 @@
 #ifndef RW_TANK_H
 #define RW_TANK_H
 
+#include "sprite.h"
+
 class Tank
 {
 public:
@@ -72,6 +74,27 @@ public:
 
         if (reloadTime >= 0.0f) reloadTime -= fElapsedTime;
         if (reloadTime <= 0.0f) reloadTime = 0.0f;
+    }
+
+    void render(SpriteManager* spriteManager)
+    {
+        // draw the tank chassis
+        spriteManager->render(
+            "tankChassis",
+            { x, y },
+            a,
+            { 1.0f, 1.0f },
+            tint
+        );
+
+        // draw the turret
+        spriteManager->render(
+            "tankTurret",
+            { x, y },
+            d,
+            { 1.0f, 1.0f },
+            tint
+        );
     }
 
 private:
