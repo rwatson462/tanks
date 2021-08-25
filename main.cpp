@@ -331,17 +331,7 @@ private:
     {
         for (auto& p : projectiles)
         {
-            // Note: PROJECTILE_BULLET_SPREAD doesn't need to be dealt with here as it just creates multiple BULLET objects
-            switch (p->type)
-            {
-            case PROJECTILE_BULLET:
-                spriteManager->render("bullet", { p->x, p->y });
-                break;
-            case PROJECTILE_BULLET_AP:
-                spriteManager->render("bullet", { p->x, p->y }, 0.0f, { 1.0f, 1.0f }, olc::RED);
-                break;
-                //TODO add missile and landmine
-            }
+            p->render(spriteManager);
         }
     }
 

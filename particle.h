@@ -4,7 +4,7 @@
 #define RW_PARTICLE_H
 
 #define _USE_MATH_DEFINES
-#include <cmath>
+#include <math.h>
 #include "olcPixelGameEngine/olcPixelGameEngine.h"
 
 

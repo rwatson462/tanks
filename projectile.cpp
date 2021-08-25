@@ -1,5 +1,6 @@
 #include <cmath>
 #include "map.h"
+#include "sprite.h"
 #include "particle.h"
 #include "olcPixelGameEngine/olcPixelGameEngine.h"
 
@@ -78,6 +79,21 @@ public:
 		x += diffX;
 		y -= diffY;
 	};
+
+	void render(SpriteManager* spriteManager)
+	{
+		// Note: PROJECTILE_BULLET_SPREAD doesn't need to be dealt with here as it just creates multiple BULLET objects
+		switch (type)
+		{
+		case PROJECTILE_BULLET:
+			spriteManager->render("bullet", { x, y });
+			break;
+		case PROJECTILE_BULLET_AP:
+			spriteManager->render("bullet", { x, y }, 0.0f, { 1.0f, 1.0f }, olc::RED);
+			break;
+			//TODO add missile and landmine
+		}
+	}
 
 protected:
 	float speed;
