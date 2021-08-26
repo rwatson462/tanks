@@ -159,7 +159,6 @@ private:
             {
                 case PROJECTILE_BULLET:
                     projectiles.push_back(new TankShell(startX, startY, player->d));
-                    printf("%f", TankShell::reloadSpeed);
                     player->maxReloadTime = TankShell::reloadSpeed;
                     break;
                 case PROJECTILE_BULLET_AP:

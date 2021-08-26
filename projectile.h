@@ -46,23 +46,9 @@ public:
 		{
 			// we're colliding with a wall, mark ourselves as no longer alive
 			alive = false;
-
+         collided = true;
 			// and create a fancy explosion animation with particles
 			createParticles(particleEmitter);
-
-//			switch (type)
-//			{
-//			case PROJECTILE_BULLET:
-//                particleEmitter->create((int)m_x, (int)m_y, rand() % 5, 1, 0.5f, olc::YELLOW);
-//				break;
-//			case PROJECTILE_BULLET_AP:
-//				particleEmitter->create((int)m_x, (int)m_y, rand() % 15, 2, 0.5f, olc::RED);
-//				break;
-//			}
-
-			// setting collided so the calling function can deal with the other part of the collision
-			// i.e. the thing we collided with
-			collided = true;
 			return;
 		}
 
@@ -141,20 +127,16 @@ private:
         particleEmitter->create((int)m_x, (int)m_y, rand() % 15, 2, 0.5f, olc::RED);
     }
 };
-
-
 class TankShellSpread : public Projectile
 {
 public:
     static const float reloadSpeed;
 };
-
 class Missile : public Projectile
 {
 public:
     static const float reloadSpeed;
 };
-
 class LandMine : public Projectile
 {
 public:
