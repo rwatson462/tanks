@@ -6,6 +6,13 @@
 #include "sprite.h"
 #include "particle.h"
 #include "projectile.h"
+
+#include "Weapon_TankShell.h"
+#include "Weapon_TankShellAP.h"
+#include "Weapon_TankShellSpread.h"
+#include "Weapon_Missile.h"
+#include "Weapon_LandMine.h"
+
 #include <cmath>
 
 
@@ -65,7 +72,7 @@ private:
         player->speed = 40.0f;
         player->turnSpeed = 2.0f;
         player->tint = olc::Pixel(255, 200, 255, 255);
-        player->currentProjectile = TankShell::type;
+        player->currentProjectile = Weapon_TankShell::type;
         player->collisionSize = map->f_tileSize * 0.4f; // distance from centre of tank to edge of hit box
 
         return true;
@@ -117,23 +124,23 @@ private:
 
         switch(player->currentProjectile)
         {
-            case TankShell::type:
-                player->currentProjectile = TankShellAP::type;
+            case Weapon_TankShell::type:
+                player->currentProjectile = Weapon_TankShellAP::type;
                 break;
-            case TankShellAP::type:
-                player->currentProjectile = TankShellSpread::type;
+            case Weapon_TankShellAP::type:
+                player->currentProjectile = Weapon_TankShellSpread::type;
                 break;
-            case TankShellSpread::type:
-                player->currentProjectile = TankShell::type;
+            case Weapon_TankShellSpread::type:
+                player->currentProjectile = Weapon_TankShell::type;
                 // no other weapons currently enabled
                 break;
-                player->currentProjectile = Missile::type;
+                player->currentProjectile = Weapon_Missile::type;
                 break;
-            case Missile::type:
-                player->currentProjectile = LandMine::type;
+            case Weapon_Missile::type:
+                player->currentProjectile = Weapon_LandMine::type;
                 break;
-            case LandMine::type:
-                player->currentProjectile = TankShell::type;
+            case Weapon_LandMine::type:
+                player->currentProjectile = Weapon_TankShell::type;
                 break;
         }
     }
@@ -157,33 +164,33 @@ private:
 
             switch(player->currentProjectile)
             {
-                case TankShell::type:
-                    projectiles.push_back(new TankShell(startX, startY, player->d));
-                    player->maxReloadTime = TankShell::reloadSpeed;
+                case Weapon_TankShell::type:
+                    projectiles.push_back(new Weapon_TankShell(startX, startY, player->d));
+                    player->maxReloadTime = Weapon_TankShell::reloadSpeed;
                     break;
-                case TankShellAP::type:
-                    projectiles.push_back(new TankShellAP(startX, startY, player->d));
-                    player->maxReloadTime = TankShellAP::reloadSpeed;
+                case Weapon_TankShellAP::type:
+                    projectiles.push_back(new Weapon_TankShellAP(startX, startY, player->d));
+                    player->maxReloadTime = Weapon_TankShellAP::reloadSpeed;
                     break;
-                case TankShellSpread::type:
+                case Weapon_TankShellSpread::type:
                     a1 = player->d - M_PI / 12;
                     a2 = player->d + M_PI / 12;
                     if (a1 < 0) a1 += M_PI * 2;
                     if (a2 > M_PI * 2) a2 -= M_PI * 2;
-                    projectiles.push_back(new TankShell(startX, startY, a1));
-                    projectiles.push_back(new TankShell(startX, startY, player->d));
-                    projectiles.push_back(new TankShell(startX, startY, a2));
-                    player->maxReloadTime = TankShellSpread::reloadSpeed;
+                    projectiles.push_back(new Weapon_TankShell(startX, startY, a1));
+                    projectiles.push_back(new Weapon_TankShell(startX, startY, player->d));
+                    projectiles.push_back(new Weapon_TankShell(startX, startY, a2));
+                    player->maxReloadTime = Weapon_TankShellSpread::reloadSpeed;
                     break;
-                case Missile::type:
+                case Weapon_Missile::type:
                     break;
 //                    projectiles.push_back(new Projectile(PROJECTILE_MISSILE, startX, startY, player->d, 50.0f, 10.0f));
-                    player->maxReloadTime = Missile::reloadSpeed;
+                    player->maxReloadTime = Weapon_Missile::reloadSpeed;
                     break;
-                case LandMine::type:
+                case Weapon_LandMine::type:
                     break;
 //                    projectiles.push_back(new Projectile(PROJECTILE_LANDMINE, player->x, player->y, player->d, 0.0f, 10.0f));
-                    player->maxReloadTime = Missile::reloadSpeed;
+                    player->maxReloadTime = Weapon_Missile::reloadSpeed;
                     break;
             }
 
@@ -321,19 +328,19 @@ private:
         float left = map->f_halfTileSize / 2;
         switch(player->currentProjectile)
         {
-            case TankShell::type:
+            case Weapon_TankShell::type:
                 renderCurrentWeaponName("Bullet");
                 break;
-            case TankShellAP::type:
+            case Weapon_TankShellAP::type:
                 renderCurrentWeaponName("Armour-piercing Bullet");
                 break;
-            case TankShellSpread::type:
+            case Weapon_TankShellSpread::type:
                 renderCurrentWeaponName("Spread Bullet");
                 break;
-            case Missile::type:
+            case Weapon_Missile::type:
                 renderCurrentWeaponName("Missile");
                 break;
-            case LandMine::type:
+            case Weapon_LandMine::type:
                 renderCurrentWeaponName("Landmine");
                 break;
         }
