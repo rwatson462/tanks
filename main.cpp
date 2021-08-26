@@ -145,7 +145,7 @@ private:
 
     void shoot()
     {
-        // left mouse = bullet
+        // left mouse or space to fire
         if (GetMouse( 0 ).bHeld || GetKey(olc::SPACE).bHeld)
         {
             // attempt to fire whatever the current projectile is
@@ -181,7 +181,8 @@ private:
                     player->maxReloadTime = Weapon_TankShellSpread::reloadSpeed;
                     break;
                 case Weapon_Missile::type:
-                    projectiles.push_back(new Weapon_Missile(startX, startY, player->d));
+                    // NB: Missile requires the game class
+                    projectiles.push_back(new Weapon_Missile(this, startX, startY, player->d));
                     player->maxReloadTime = Weapon_Missile::reloadSpeed;
                     break;
                 case Weapon_LandMine::type:
@@ -204,7 +205,10 @@ private:
         {
             projectile->update(fElapsedTime, map, particleEmitter, collided);
 
+            // the projectile will report if it collided with anything
             if (!collided) continue;
+
+            // handle the collision
 
             // convert projectile's x/y to map coords
             int projX = floor(projectile->m_x / map->f_tileSize);
