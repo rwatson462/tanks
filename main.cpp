@@ -173,10 +173,10 @@ private:
                     player->maxReloadTime = Weapon_TankShellAP::reloadSpeed;
                     break;
                 case Weapon_TankShellSpread::type:
-                    a1 = player->d - M_PI / 12;
+                    a1 = player->d - M_PI / 12;  // 12 is just arbitrary
                     a2 = player->d + M_PI / 12;
-                    if (a1 < 0) a1 += M_PI * 2;
-                    if (a2 > M_PI * 2) a2 -= M_PI * 2;
+                    if (a1 < 0) a1 += M_PI * 2;  // ensure we don't go below zero
+                    if (a2 > M_PI * 2) a2 -= M_PI * 2;  // or above 2*PI
                     projectiles.push_back(new Weapon_TankShell(startX, startY, a1));
                     projectiles.push_back(new Weapon_TankShell(startX, startY, player->d));
                     projectiles.push_back(new Weapon_TankShell(startX, startY, a2));
