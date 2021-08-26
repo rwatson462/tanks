@@ -58,12 +58,14 @@ private:
         spriteManager->load("destructableWallTile", "./assets/destructable-wall.png");
         spriteManager->load("solidWallTile", "./assets/solid-wall.png");
         spriteManager->load("bullet", "./assets/bullet.png");
+        spriteManager->load("x", "./assets/x.png");
 
         // setup offsets for how we draw these objects
         spriteManager->get("tankChassis")->setOffset(map->f_halfTileSize);
         spriteManager->get("tankTurret")->setOffset(map->f_halfTileSize);
         spriteManager->get("tankTrack")->setOffset(map->f_halfTileSize);
         spriteManager->get("bullet")->setOffset(spriteManager->get("bullet")->getSprite()->width / 2.0f);
+        spriteManager->get("x")->setOffset(spriteManager->get("x")->getSprite()->width / 2.0f);
 
         player = new Tank();
         player->x = map->mapWidth * map->f_tileSize / 2.0f;

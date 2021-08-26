@@ -35,7 +35,7 @@ public:
         // todo add missile sprite that faces it's angle
         spriteManager->render("bullet", { m_x, m_y }, 0.0f, { 1.5f, 1.5f }, olc::BLUE);
 
-        spriteManager->render("bullet", { m_mouseX, m_mouseY }, 0.0f, { 1.0f,1.0f }, olc::Pixel(128, 128, 255, 128));
+        spriteManager->render("x", { m_mouseX, m_mouseY }, 0.0f, { 1.0f,1.0f }, olc::Pixel(128, 128, 255, 128));
     }
 private:
     float m_mouseX = 0.0f;
