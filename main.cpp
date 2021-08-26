@@ -5,7 +5,7 @@
 #include "tank.h"
 #include "sprite.h"
 #include "particle.h"
-#include "projectile.cpp"
+#include "projectile.h"
 #include <cmath>
 
 
@@ -159,11 +159,12 @@ private:
             {
                 case PROJECTILE_BULLET:
                     projectiles.push_back(new TankShell(startX, startY, player->d));
-                    player->maxReloadTime = RELOAD_BULLET;
+                    printf("%f", TankShell::reloadSpeed);
+                    player->maxReloadTime = TankShell::reloadSpeed;
                     break;
                 case PROJECTILE_BULLET_AP:
                     projectiles.push_back(new TankShellAP(startX, startY, player->d));
-                    player->maxReloadTime = RELOAD_BULLET_AP;
+                    player->maxReloadTime = TankShellAP::reloadSpeed;
                     break;
                 case PROJECTILE_BULLET_SPREAD:
                     a1 = player->d - M_PI / 12;
@@ -173,17 +174,17 @@ private:
                     projectiles.push_back(new TankShell(startX, startY, a1));
                     projectiles.push_back(new TankShell(startX, startY, player->d));
                     projectiles.push_back(new TankShell(startX, startY, a2));
-                    player->maxReloadTime = RELOAD_BULLET_SPREAD;
+                    player->maxReloadTime = TankShellSpread::reloadSpeed;
                     break;
                 case PROJECTILE_MISSILE:
                     break;
 //                    projectiles.push_back(new Projectile(PROJECTILE_MISSILE, startX, startY, player->d, 50.0f, 10.0f));
-                    player->maxReloadTime = RELOAD_MISSILE;
+                    player->maxReloadTime = Missile::reloadSpeed;
                     break;
                 case PROJECTILE_LANDMINE:
                     break;
 //                    projectiles.push_back(new Projectile(PROJECTILE_LANDMINE, player->x, player->y, player->d, 0.0f, 10.0f));
-                    player->maxReloadTime = RELOAD_LANDMINE;
+                    player->maxReloadTime = Missile::reloadSpeed;
                     break;
             }
 
