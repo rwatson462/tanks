@@ -17,6 +17,9 @@ public:
         m_x = x;
         m_y = y;
 
+        // missile sprite is 90 degree rotated
+        m_a = a - M_PI/2;
+
         // speed == 100
         m_sinA = sin(a) * 100.0f;
         m_cosA = cos(a) * 100.0f;
@@ -33,11 +36,12 @@ public:
     void render(SpriteManager* spriteManager)
     {
         // todo add missile sprite that faces it's angle
-        spriteManager->render("bullet", { m_x, m_y }, 0.0f, { 1.5f, 1.5f }, olc::BLUE);
+        spriteManager->render("missile", { m_x, m_y }, m_a);
 
-        spriteManager->render("x", { m_mouseX, m_mouseY }, 0.0f, { 1.0f,1.0f }, olc::Pixel(128, 128, 255, 128));
+        spriteManager->render("x", { m_mouseX, m_mouseY }, 0.0f, { 1.0f,1.0f }, olc::Pixel(255, 0, 0, 128));
     }
 private:
+    float m_a = 0.0f;
     float m_mouseX = 0.0f;
     float m_mouseY = 0.0f;
 

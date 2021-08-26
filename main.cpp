@@ -58,6 +58,7 @@ private:
         spriteManager->load("destructableWallTile", "./assets/destructable-wall.png");
         spriteManager->load("solidWallTile", "./assets/solid-wall.png");
         spriteManager->load("bullet", "./assets/bullet.png");
+        spriteManager->load("missile", "./assets/spr_missile_half.png");
         spriteManager->load("x", "./assets/x.png");
 
         // setup offsets for how we draw these objects
@@ -65,6 +66,7 @@ private:
         spriteManager->get("tankTurret")->setOffset(map->f_halfTileSize);
         spriteManager->get("tankTrack")->setOffset(map->f_halfTileSize);
         spriteManager->get("bullet")->setOffset(spriteManager->get("bullet")->getSprite()->width / 2.0f);
+        spriteManager->get("missile")->setOffset(spriteManager->get("missile")->getSprite()->width / 2.0f);
         spriteManager->get("x")->setOffset(spriteManager->get("x")->getSprite()->width / 2.0f);
 
         player = new Tank();
@@ -389,7 +391,7 @@ private:
 int main()
 {
     TanksGame game;
-    if( game.Construct(320, 240, 2, 2, false ) )
+    if( game.Construct(320, 240, 2, 2, true ) )
     {
         game.Start();
     }
