@@ -65,7 +65,7 @@ private:
         player->speed = 40.0f;
         player->turnSpeed = 2.0f;
         player->tint = olc::Pixel(255, 200, 255, 255);
-        player->currentProjectile = PROJECTILE_BULLET;
+        player->currentProjectile = TankShell::type;
         player->collisionSize = map->f_tileSize * 0.4f; // distance from centre of tank to edge of hit box
 
         return true;
@@ -117,23 +117,23 @@ private:
 
         switch(player->currentProjectile)
         {
-            case PROJECTILE_BULLET:
-                player->currentProjectile = PROJECTILE_BULLET_AP;
+            case TankShell::type:
+                player->currentProjectile = TankShellAP::type;
                 break;
-            case PROJECTILE_BULLET_AP:
-                player->currentProjectile = PROJECTILE_BULLET_SPREAD;
+            case TankShellAP::type:
+                player->currentProjectile = TankShellSpread::type;
                 break;
-            case PROJECTILE_BULLET_SPREAD:
-                player->currentProjectile = PROJECTILE_BULLET;
+            case TankShellSpread::type:
+                player->currentProjectile = TankShell::type;
                 // no other weapons currently enabled
                 break;
-                player->currentProjectile = PROJECTILE_MISSILE;
+                player->currentProjectile = Missile::type;
                 break;
-            case PROJECTILE_MISSILE:
-                player->currentProjectile = PROJECTILE_LANDMINE;
+            case Missile::type:
+                player->currentProjectile = LandMine::type;
                 break;
-            case PROJECTILE_LANDMINE:
-                player->currentProjectile = PROJECTILE_BULLET;
+            case LandMine::type:
+                player->currentProjectile = TankShell::type;
                 break;
         }
     }
@@ -157,15 +157,15 @@ private:
 
             switch(player->currentProjectile)
             {
-                case PROJECTILE_BULLET:
+                case TankShell::type:
                     projectiles.push_back(new TankShell(startX, startY, player->d));
                     player->maxReloadTime = TankShell::reloadSpeed;
                     break;
-                case PROJECTILE_BULLET_AP:
+                case TankShellAP::type:
                     projectiles.push_back(new TankShellAP(startX, startY, player->d));
                     player->maxReloadTime = TankShellAP::reloadSpeed;
                     break;
-                case PROJECTILE_BULLET_SPREAD:
+                case TankShellSpread::type:
                     a1 = player->d - M_PI / 12;
                     a2 = player->d + M_PI / 12;
                     if (a1 < 0) a1 += M_PI * 2;
@@ -175,12 +175,12 @@ private:
                     projectiles.push_back(new TankShell(startX, startY, a2));
                     player->maxReloadTime = TankShellSpread::reloadSpeed;
                     break;
-                case PROJECTILE_MISSILE:
+                case Missile::type:
                     break;
 //                    projectiles.push_back(new Projectile(PROJECTILE_MISSILE, startX, startY, player->d, 50.0f, 10.0f));
                     player->maxReloadTime = Missile::reloadSpeed;
                     break;
-                case PROJECTILE_LANDMINE:
+                case LandMine::type:
                     break;
 //                    projectiles.push_back(new Projectile(PROJECTILE_LANDMINE, player->x, player->y, player->d, 0.0f, 10.0f));
                     player->maxReloadTime = Missile::reloadSpeed;
@@ -321,19 +321,19 @@ private:
         float left = map->f_halfTileSize / 2;
         switch(player->currentProjectile)
         {
-            case PROJECTILE_BULLET:
+            case TankShell::type:
                 renderCurrentWeaponName("Bullet");
                 break;
-            case PROJECTILE_BULLET_AP:
+            case TankShellAP::type:
                 renderCurrentWeaponName("Armour-piercing Bullet");
                 break;
-            case PROJECTILE_BULLET_SPREAD:
+            case TankShellSpread::type:
                 renderCurrentWeaponName("Spread Bullet");
                 break;
-            case PROJECTILE_MISSILE:
+            case Missile::type:
                 renderCurrentWeaponName("Missile");
                 break;
-            case PROJECTILE_LANDMINE:
+            case LandMine::type:
                 renderCurrentWeaponName("Landmine");
                 break;
         }

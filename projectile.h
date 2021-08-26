@@ -8,19 +8,11 @@
 #include "particle.h"
 #include "olcPixelGameEngine/olcPixelGameEngine.h"
 
-constexpr int PROJECTILE_BULLET = 1;
-constexpr int PROJECTILE_BULLET_AP = 2;
-constexpr int PROJECTILE_BULLET_SPREAD = 3;
-constexpr int PROJECTILE_MISSILE = 4;
-constexpr int PROJECTILE_LANDMINE = 5;
-
 class Projectile
 {
 public:
     // deliberately named these without m_ as it'll be accessed from public
 	bool alive = true;
-    int type = 0;
-
     float m_x = 0.0f, m_y = 0.0f;
 
 	void update(float fElapsedTime, TileMap* map, ParticleEmitter* particleEmitter, bool& collided)
@@ -44,10 +36,9 @@ public:
 
 		if (map->getObstacleTile(floor(m_x / map->f_tileSize), floor(m_y / map->f_tileSize)) != L' ')
 		{
-			// we're colliding with a wall, mark ourselves as no longer alive
+			// we're colliding with a wall
 			alive = false;
-         collided = true;
-			// and create a fancy explosion animation with particles
+            collided = true;
 			createParticles(particleEmitter);
 			return;
 		}
@@ -70,7 +61,8 @@ protected:
 class TankShell : public Projectile
 {
 public:
-    static const float reloadSpeed;
+    static constexpr float reloadSpeed = 0.2f;
+    static constexpr int type = 1;
 
     TankShell(float x, float y, float a)
     {
@@ -82,26 +74,24 @@ public:
         m_cosA = cos(a) * 200.0f;
 
         m_dmg = 1.0f;
-        type = PROJECTILE_BULLET;
     }
 
-    void render(SpriteManager* spriteManager) override
+    void render(SpriteManager* spriteManager)
     {
         spriteManager->render("bullet", { m_x, m_y });
     }
-
 private:
-    void createParticles( ParticleEmitter* particleEmitter) override
+    void createParticles(ParticleEmitter* particleEmitter)
     {
         particleEmitter->create((int)m_x, (int)m_y, rand() % 5, 1, 0.5f, olc::YELLOW);
     }
 };
 
-
 class TankShellAP : public Projectile
 {
 public:
-    static const float reloadSpeed;
+    static constexpr float reloadSpeed = 0.5f;
+    static constexpr int type = 2;
 
     TankShellAP(float x, float y, float a)
     {
@@ -113,34 +103,38 @@ public:
         m_cosA = cos(a) * 150.0f;
 
         m_dmg = 5.0f;
-        type = PROJECTILE_BULLET_AP;
     }
 
-    void render( SpriteManager* spriteManager) override
+    void render(SpriteManager* spriteManager)
     {
         spriteManager->render("bullet", { m_x, m_y }, 0.0f, { 1.0f, 1.0f }, olc::RED);
     }
-
 private:
-    void createParticles( ParticleEmitter* particleEmitter) override
+    void createParticles(ParticleEmitter* particleEmitter)
     {
         particleEmitter->create((int)m_x, (int)m_y, rand() % 15, 2, 0.5f, olc::RED);
     }
 };
+
 class TankShellSpread : public Projectile
 {
 public:
-    static const float reloadSpeed;
+    static constexpr float reloadSpeed = 0.75f;
+    static constexpr int type = 3;
 };
+
 class Missile : public Projectile
 {
 public:
-    static const float reloadSpeed;
+    static constexpr float reloadSpeed = 2.0f;
+    static constexpr int type = 4;
 };
+
 class LandMine : public Projectile
 {
 public:
-    static const float reloadSpeed;
+    static constexpr float reloadSpeed = 5.0f;
+    static constexpr int type = 5;
 };
 
 
