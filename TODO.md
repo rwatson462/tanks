@@ -16,7 +16,7 @@
 * Add summary screen when map finishes
 * Add menu system
 * Record high scores
-* Add Missile weapon type
+* Upgrade Missile weapon so it homes in on target location
 * Add Land mine weapon type
 * Add method for unlocking weapons as the game progresses.  Something like
    power-ups on the floow to collect that give you access to a new weapon
