@@ -131,13 +131,11 @@ private:
                 player->currentProjectile = Weapon_TankShellSpread::type;
                 break;
             case Weapon_TankShellSpread::type:
-                player->currentProjectile = Weapon_TankShell::type;
-                // no other weapons currently enabled
-                break;
                 player->currentProjectile = Weapon_Missile::type;
                 break;
             case Weapon_Missile::type:
-                player->currentProjectile = Weapon_LandMine::type;
+                // this is the last weapon... so far
+                player->currentProjectile = Weapon_TankShell::type;
                 break;
             case Weapon_LandMine::type:
                 player->currentProjectile = Weapon_TankShell::type;
@@ -183,8 +181,7 @@ private:
                     player->maxReloadTime = Weapon_TankShellSpread::reloadSpeed;
                     break;
                 case Weapon_Missile::type:
-                    break;
-//                    projectiles.push_back(new Projectile(PROJECTILE_MISSILE, startX, startY, player->d, 50.0f, 10.0f));
+                    projectiles.push_back(new Weapon_Missile(startX, startY, player->d));
                     player->maxReloadTime = Weapon_Missile::reloadSpeed;
                     break;
                 case Weapon_LandMine::type:
